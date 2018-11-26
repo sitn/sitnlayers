@@ -44,11 +44,14 @@
       zoom: 4
     })
 
-    sitnLayers.map = new ol.Map({
-      target: 'sitn-map',
-      layers: [sitnLayers.sitnCurrentBaseLayer],
-      view: sitnLayers.view
-    })
+    sitnLayers.createMap = function (target) {
+      sitnLayers.map = new ol.Map({
+        target: target,
+        layers: [sitnLayers.sitnCurrentBaseLayer],
+        view: sitnLayers.view
+      })
+      return sitnLayers.map
+    }
 
     sitnLayers.loadWKT = function () {
       let format = new ol.format.WKT()
@@ -62,7 +65,7 @@
           features: [feature]
         })
       })
-      this.map.addLayer(vector)
+      sitnLayers.map.addLayer(vector)
     }
 
     return sitnLayers
