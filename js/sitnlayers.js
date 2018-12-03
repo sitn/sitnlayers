@@ -75,8 +75,8 @@
           //  2- an option bar to delete / get information on the selected feature
           var sbar = new ol.control.Bar()
           sbar.addControl(new ol.control.TextButton({
-            html: '<small class="fas fa-trash"></small>',
-            title: 'Delete',
+            html: '<i class="fas fa-trash"></i>',
+            title: 'Effacer',
             handleClick: function () {
               var features = selectCtrl.getInteraction().getFeatures()
               if (!features.getLength()) console.log('Select an object first...')
@@ -132,15 +132,15 @@
               bar: new ol.control.Bar(
                 {
                   controls: [new ol.control.TextButton({
-                    html: 'undo',
-                    title: 'Delete last point',
+                    html: '<i class="fas fa-undo"></i>',
+                    title: 'Revenir en arrière',
                     handleClick: function () {
                       if (ledit.getInteraction().nbpts > 1) ledit.getInteraction().removeLastPoint()
                     }
                   }),
                   new ol.control.TextButton({
-                    html: 'Finish',
-                    title: 'finish',
+                    html: '<i class="fas fa-check"></i>',
+                    title: 'Terminer la construction',
                     handleClick: function () { // Prevent null objects on finishDrawing
                       if (ledit.getInteraction().nbpts > 2) ledit.getInteraction().finishDrawing()
                     }
@@ -171,15 +171,15 @@
               bar: new ol.control.Bar(
                 {
                   controls: [new ol.control.TextButton({
-                    html: 'undo',
-                    title: 'undo last point',
+                    html: '<i class="fas fa-undo"></i>',
+                    title: 'Revenir en arrière',
                     handleClick: function () {
                       if (fedit.getInteraction().nbpts > 1) fedit.getInteraction().removeLastPoint()
                     }
                   }),
                   new ol.control.TextButton({
-                    html: 'finish',
-                    title: 'finish',
+                    html: '<i class="fas fa-check"></i>',
+                    title: 'Terminer la construction',
                     handleClick: function () { // Prevent null objects on finishDrawing
                       if (fedit.getInteraction().nbpts > 3) fedit.getInteraction().finishDrawing()
                     }
@@ -188,19 +188,6 @@
                 })
             })
           editbar.addControl(fedit)
-        }
-
-        // Add a simple push button to save features
-        if (_buttons.indexOf('save') !== -1) {
-          var save = new ol.control.Button(
-            {
-              html: '<small class="fas fa-download"></small>',
-              title: 'Save',
-              handleClick: sitnLayers.vectorLayerExport
-            })
-          _mainbar.addControl(save)
-          sitnLayers.map = _map
-          return sitnLayers.map
         }
       }
     }
@@ -214,36 +201,15 @@
       _vectorLayer.getSource().addFeatures(features)
     }
 
-    sitnLayers.vectorLayerExport = function () {
+    sitnLayers.getWKTData = function () {
       let features = _vectorLayer.getSource().getFeatures()
       if (features) {
-        if (_saveFormats.indexOf('WKT') !== -1) {
-          let wktData = new ol.format.WKT().writeFeatures(features)
-          window.dispatchEvent(new CustomEvent('WKTReady', {
-            detail: {
-              data: wktData,
-              from: _target
-            }
-          }))
-        }
+        let wktData = new ol.format.WKT().writeFeatures(features)
+        return wktData
       }
     }
     return sitnLayers
   }
 
   window.SitnMap = sitnLayers
-
-  // IE polyfill for customEvent
-  if (typeof window.CustomEvent === 'function') return false // If not IE
-
-  function CustomEvent (event, params) {
-    params = params || { bubbles: false, cancelable: false, detail: undefined }
-    var evt = document.createEvent('CustomEvent')
-    evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail)
-    return evt
-  }
-
-  CustomEvent.prototype = window.Event.prototype
-
-  window.CustomEvent = CustomEvent
 })(window)
