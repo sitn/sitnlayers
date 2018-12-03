@@ -1,31 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8"> 
-    <link rel="stylesheet" href="assets/ol/ol.css" type="text/css">
-    <style>
-      .map {
-        height: 400px;
-        width: 100%;
-      }
-      #inputwkt {
-        width: 100%;
-      }
-    </style>
-    <script src="assets/ol/ol.js"></script>
-    <script src="assets/proj4/proj4.js"></script>
-    <script src="assets/jquery/jquery-3.3.1.min.js"></script>
-    <title>sitnLayers</title>
-  </head>
-  <body>
-    <h2>Exemple 1</h2>
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <link rel="stylesheet" href="assets/ol/ol.css" type="text/css">
+  <link rel="stylesheet" href="assets/ol-ext/ol-ext.min.css" type="text/css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/fontawesome/css/all.css">
+  <style>
+    .map {
+      height: 400px;
+      width: 100%;
+    }
+
+    #inputwkt {
+      width: 100%;
+    }
+  </style>
+  <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=Element.prototype.classList,URL,Object.assign"></script>
+  <script src="assets/jquery/jquery-3.3.1.min.js"></script>
+  <script src="assets/proj4/proj4.js"></script>
+  <script src="assets/ol/ol.js"></script>
+  <script src="assets/ol-ext/ol-ext.min.js"></script>
+  <script src="./js/sitnlayers.js"></script>
+  <title>sitnLayers</title>
+</head>
+
+<body>
+  <div class="jumbotron text-center">
+    <h1>sitnLayers</h1>
+  </div>
+  <div class="container">
+    <h3>Exemple 1</h3>
     <p>Affiche un WKT</p>
-    <textarea name="inputwkt" id="inputwkt" rows="2">POLYGON((2540000 1203000,2550000 1213000,2560000 1203000,2540000 1203000))</textarea>
-    <button onclick="map.loadWKT()">Load</button>
+    <div class="form-group">
+      <textarea class="form-control" name="inputwkt" id="inputwkt" rows="2">POLYGON((2540000 1203000,2550000 1213000,2560000 1203000,2540000 1203000))</textarea>
+    </div>
+    <div class="form-group">
+      <button class="btn btn-primary" onclick="map1.loadWKT()">Charger</button>
+    </div>
     <div id="sitn-map" class="map"></div>
-    <script src="./js/sitnlayers.js"></script>
+
     <script>
-      map.createMap('sitn-map')
+      // Création de la carte
+      map1 = new SitnMap()
+      map1.createMap({
+        target: 'sitn-map'
+      })
     </script>
-  </body>
+
+    <hr>
+
+    <h3>Exemple 2</h3>
+    <p>Edition avec export WKT</p>
+    <div id="sitn-map-2" class="map"></div>
+    <div class="form-group">
+      <label for="outputwkt">Résultat de l'export</label>
+      <textarea class="form-control" name="output" id="outputwkt" rows="2"></textarea>
+    </div>
+    <div class="form-group">
+      <button class="btn btn-primary" onclick="save()">Sauvegarder</button>
+    </div>
+
+    <script>
+      // Création de la carte
+      map2 = new SitnMap()
+      map2.createMap({
+        target: 'sitn-map-2',
+        buttons: [
+          'edit',
+          'createPoint',
+          'createLineString',
+          'createPolygon'
+        ],
+        baseLayers: [
+          'plan_ville',
+          'plan_cadastral',
+          'ortho'
+        ]
+      })
+
+      function save() {
+        data = map2.getWKTData()
+        $('#outputwkt').html(data)
+      }
+
+    </script>
+  </div>
+</body>
+
 </html>

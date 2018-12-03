@@ -12,6 +12,13 @@ curl https://code.jquery.com/jquery-3.3.1.min.js -o assets\jquery\jquery-3.3.1.m
 curl https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js -o assets\ol\ol.js
 curl https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css -o assets\ol\ol.css
 curl https://raw.githubusercontent.com/proj4js/proj4js/2.5.0/dist/proj4.js -o assets\proj4\proj4.js
+curl https://raw.githubusercontent.com/Viglino/ol-ext/master/dist/ol-ext.min.js -o assets\ol-ext\ol-ext.min.js
+curl https://raw.githubusercontent.com/Viglino/ol-ext/master/dist/ol-ext.min.css -o assets\ol-ext\ol-ext.min.css
+curl https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/web-fonts-with-css/css/solid.min.css -o assets\fontawesome\css\solid.min.css
+curl https://use.fontawesome.com/releases/v5.5.0/fontawesome-free-5.5.0-web.zip -o assets\fa.zip
+Expand-Archive assets\fa.zip -DestinationPath assets
+get-childitem -Path "assets\fontawesome*" | rename-item -NewName fontawesome
+del assets\fa.zip
 ```
 
 ## Dev environment
