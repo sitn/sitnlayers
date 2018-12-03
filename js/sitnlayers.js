@@ -75,7 +75,7 @@
           //  2- an option bar to delete / get information on the selected feature
           var sbar = new ol.control.Bar()
           sbar.addControl(new ol.control.TextButton({
-            html: '✖',
+            html: '<small class="fas fa-trash"></small>',
             title: 'Delete',
             handleClick: function () {
               var features = selectCtrl.getInteraction().getFeatures()
@@ -89,7 +89,7 @@
           }))
 
           var selectCtrl = new ol.control.Toggle({
-            html: '🖢',
+            html: '<small class="fas fa-mouse-pointer"></small>',
             title: 'Select',
             interaction: new ol.interaction.Select(),
             bar: sbar,
@@ -102,7 +102,7 @@
         // Add editing tools
         if (_buttons.indexOf('createPoint') !== -1) {
           var pedit = new ol.control.Toggle({
-            html: '⠌',
+            html: '<small class="fas fa-map-pin"></small>',
             title: 'Point',
             interaction: new ol.interaction.Draw({
               type: 'Point',
@@ -114,7 +114,7 @@
         if (_buttons.indexOf('createLineString') !== -1) {
           var ledit = new ol.control.Toggle(
             {
-              html: '☡',
+              html: '<small class="fas fa-check fa-rotate-270 fa-flip-vertical"></small>',
               title: 'LineString',
               interaction: new ol.interaction.Draw({
                 type: 'LineString',
@@ -154,7 +154,7 @@
         if (_buttons.indexOf('createPolygon') !== -1) {
           var fedit = new ol.control.Toggle(
             {
-              html: '⭓',
+              html: '<small class="fas fa-play fa-rotate-270"></small>',
               title: 'Polygon',
               interaction: new ol.interaction.Draw({
                 type: 'Polygon',
@@ -194,7 +194,7 @@
         if (_buttons.indexOf('save') !== -1) {
           var save = new ol.control.Button(
             {
-              html: '⭳',
+              html: '<small class="fas fa-download"></small>',
               title: 'Save',
               handleClick: sitnLayers.vectorLayerExport
             })
