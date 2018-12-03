@@ -40,7 +40,7 @@
       <textarea class="form-control" name="inputwkt" id="inputwkt" rows="2">POLYGON((2540000 1203000,2550000 1213000,2560000 1203000,2540000 1203000))</textarea>
     </div>
     <div class="form-group">
-      <button class="btn btn-primary" onclick="map1.loadWKT()">Charger</button>
+      <button class="btn btn-primary" onclick="loadData()">Charger</button>
     </div>
     <div id="sitn-map" class="map"></div>
 
@@ -50,6 +50,12 @@
       map1.createMap({
         target: 'sitn-map'
       })
+      
+      loadData = function() {
+        var wkt = $('#inputwkt').val()
+        map1.loadWKT(wkt)
+      }
+      
     </script>
 
     <hr>

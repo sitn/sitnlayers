@@ -189,9 +189,9 @@
         }
       }
     }
-    sitnLayers.loadWKT = function () {
+    sitnLayers.loadWKT = function (wkt) {
       let format = new ol.format.WKT()
-      let data = $('#inputwkt').val()
+      let data = wkt;
       let features = format.readFeatures(data, {
         dataProjection: _crs,
         featureProjection: _crs
