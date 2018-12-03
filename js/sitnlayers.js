@@ -1,13 +1,12 @@
 /* global proj4, ol, $ */
 (function (window) {
-  function sitnLayers() {
+  function sitnLayers () {
     var sitnLayers = {}
     const _extent = [2420000, 1030000, 2900000, 1350000]
     const _crs = 'EPSG:2056'
     const _WMTSurl = 'https://sitn.ne.ch/web_getcapabilities/WMTSGetCapabilities95.xml'
     const _vectorLayer = new ol.layer.Vector({ source: new ol.source.Vector() })
     var _buttons = []
-    var _saveFormats = []
     var _baselayers = [] // use this later for layer selection
     var _target
 
@@ -45,7 +44,6 @@
 
     sitnLayers.createMap = function (options) {
       _buttons = options['buttons']
-      _saveFormats = options['saveFormats']
       _baselayers = options['baselayers']
       _target = options['target']
       let _mainbar

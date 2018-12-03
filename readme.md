@@ -19,9 +19,6 @@ curl https://use.fontawesome.com/releases/v5.5.0/fontawesome-free-5.5.0-web.zip 
 Expand-Archive assets\fa.zip -DestinationPath assets
 get-childitem -Path "assets\fontawesome*" | rename-item -NewName fontawesome
 del assets\fa.zip
-curl https://gist.githubusercontent.com/matijs/d1e0bdce90b507b9dbe7e280a34f0e59/raw/6a361fdef1a68c2b808a8a1adc9320b977cd25da/classList.js -o assets\polyfills\classList.js
-curl https://gist.githubusercontent.com/spiralx/68cf40d7010d829340cb/raw/96a9385eddb8cc401d5965d348a463f961e4762a/object-assign.js -o assets\polyfills\object-assign.js
-curl https://cdn.jsdelivr.net/npm/url-polyfill@1.1.3/url-polyfill.min.js -o assets\polyfills\url-polyfill.min.js
 ```
 
 ## Dev environment
