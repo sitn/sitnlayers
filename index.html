@@ -81,11 +81,6 @@
           'createPoint',
           'createLineString',
           'createPolygon'
-        ],
-        baseLayers: [
-          'plan_ville',
-          'plan_cadastral',
-          'ortho'
         ]
       })
 
@@ -95,6 +90,29 @@
       }
 
     </script>
+
+    <h3>Exemple 3</h3>
+    <p>Changement du fond de carte</p>
+    <div class="form-group">
+      <label for="theme-selector">Sélectionnez votre thème</label>
+      <select class="form-control" name="theme-selector" id="theme-selector"></select>
+    </div>
+    <div id="sitn-map-3" class="map"></div>
+
+    <script>
+      // Création de la carte
+      map3 = new SitnMap()
+      map3.createMap({
+        target: 'sitn-map-3',
+        baseLayers: [
+          'plan_ville',
+          'plan_cadastral',
+          'ortho'
+        ],
+        selectTarget: 'theme-selector'
+      })
+    </script>
+
   </div>
 </body>
 
