@@ -6,9 +6,15 @@
     const _crs = 'EPSG:2056'
     const _WMTSurl = 'https://sitn.ne.ch/web_getcapabilities/WMTSGetCapabilities95.xml'
     const _vectorLayer = new ol.layer.Vector({ source: new ol.source.Vector() })
+    const _sitnBaseLayers = {
+      'plan_ville': 'Plan de ville',
+      'plan_cadastral': 'Plan cadastral',
+      'ortho': 'Images aériennes'
+    }
     var _buttons = []
     var _baselayers = [] // use this later for layer selection
     var _target
+    var _selectTarget
 
     sitnLayers.sitnCurrentBaseLayer = new ol.layer.Tile()
 
@@ -24,17 +30,19 @@
     })
 
     // TODO: get out source from here when base layer selection will be implemented
-    $.ajax(_WMTSurl).then(function (response) {
-      let _parser = new ol.format.WMTSCapabilities()
-      let _result = _parser.read(response)
-      sitnLayers.WMTSOptions = ol.source.WMTS.optionsFromCapabilities(
-        _result, {
-          layer: '1-plan_ville',
-          matrixSet: _crs
-        })
-      let source = new ol.source.WMTS(sitnLayers.WMTSOptions)
-      sitnLayers.sitnCurrentBaseLayer.setSource(source)
-    })
+    sitnLayers.setSource = function (layerName) {
+      $.ajax(_WMTSurl).then(function (response) {
+        let _parser = new ol.format.WMTSCapabilities()
+        let _result = _parser.read(response)
+        sitnLayers.WMTSOptions = ol.source.WMTS.optionsFromCapabilities(
+          _result, {
+            layer: layerName,
+            matrixSet: _crs
+          })
+        let source = new ol.source.WMTS(sitnLayers.WMTSOptions)
+        sitnLayers.sitnCurrentBaseLayer.setSource(source)
+      })
+    }
 
     sitnLayers.view = new ol.View({
       projection: _projection,
@@ -44,8 +52,9 @@
 
     sitnLayers.createMap = function (options) {
       _buttons = options['buttons']
-      _baselayers = options['baselayers']
+      _baselayers = options['baseLayers']
       _target = options['target']
+      _selectTarget = options['selectTarget']
       let _mainbar
       let _map = new ol.Map({
         target: _target,
@@ -55,6 +64,24 @@
         ],
         view: sitnLayers.view
       })
+
+      /**
+       * Creates select options, sets first baseLayer as default
+       * or sets plan_ville if no _baselayers are defined
+       */
+      if (_baselayers) {
+        $.each(_baselayers, function (key, value) {
+          $('#' + _selectTarget)
+            .append(new Option(_sitnBaseLayers[value], value))
+        })
+        $('#' + _selectTarget).change(function () {
+          let newSource = $('#' + _selectTarget + ' option:selected').val()
+          sitnLayers.setSource(newSource)
+        })
+        this.setSource(_baselayers[0])
+      } else {
+        this.setSource('plan_ville')
+      }
 
       if (_buttons) {
         _mainbar = new ol.control.Bar()
