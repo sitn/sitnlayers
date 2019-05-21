@@ -1,20 +1,22 @@
 /* global proj4, ol, $ */
 (function (window) {
-  function sitnLayers () {
+  function sitnLayers() {
     var sitnLayers = {}
     const _extent = [2420000, 1030000, 2900000, 1350000]
     const _crs = 'EPSG:2056'
     const _WMTSurl = 'https://sitn.ne.ch/web_getcapabilities/WMTSGetCapabilities95.xml'
-    const _vectorLayer = new ol.layer.Vector({ source: new ol.source.Vector() })
+    const _drawSource = new ol.source.Vector()
+    const _vectorLayer = new ol.layer.Vector({ source: _drawSource })
     const _sitnBaseLayers = {
       'plan_ville': 'Plan de ville',
       'plan_cadastral': 'Plan cadastral',
       'ortho': 'Images aériennes'
     }
     var _buttons = []
-    var _baselayers = [] // use this later for layer selection
+    var _baselayers = []
     var _target
     var _selectTarget
+    var _drawSimpleGeom = false
 
     sitnLayers.sitnCurrentBaseLayer = new ol.layer.Tile()
 
@@ -50,11 +52,25 @@
       zoom: 4
     })
 
+    /**
+     * Toogles multiple geometry mode, if it's set to simple geometry
+     * and multiple geometries were already drawn -> only keeps the last drawn geometry
+     */
+    sitnLayers.setSimpleGeom = function (value) {
+      _drawSimpleGeom = value
+      if (_drawSimpleGeom && _drawSource.getFeatures().length > 1) {
+        lastFeature = _drawSource.getFeatures().slice(-1)[0]
+        _drawSource.clear()
+        _drawSource.addFeature(lastFeature)
+      }
+    }
+
     sitnLayers.createMap = function (options) {
       _buttons = options['buttons']
       _baselayers = options['baseLayers']
       _target = options['target']
       _selectTarget = options['selectTarget']
+      _drawSimpleGeom = options['drawSimpleGeom'] // controls wether or not an user can draw multiple geometries
       let _mainbar
       let _map = new ol.Map({
         target: _target,
@@ -192,7 +208,7 @@
                   return geometry
                 }
               }),
-              // Options bar ssociated with the control
+              // Options bar associated with the control
               bar: new ol.control.Bar(
                 {
                   controls: [new ol.control.TextButton({
@@ -214,6 +230,14 @@
             })
           editbar.addControl(fedit)
         }
+
+        // If this option is enabled, then the user can only draw simple geometries
+        _drawSource.on('addfeature', function (event) {
+          if (_drawSimpleGeom && _drawSource.getFeatures().length > 1) {
+            _drawSource.clear()
+            _drawSource.addFeature(event.feature)
+          }
+        });
       }
     }
     sitnLayers.loadWKT = function (wkt) {
