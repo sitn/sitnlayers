@@ -6,7 +6,7 @@
     const _crs = 'EPSG:2056'
     const _WMTSurl = 'https://sitn.ne.ch/web_getcapabilities/WMTSGetCapabilities95.xml'
     const _drawSource = new ol.source.Vector()
-    const _vectorLayer = new ol.layer.Vector({ source: _drawSource })
+    const _markerSource = new ol.source.Vector()
     const _sitnBaseLayers = {
       'plan_ville': 'Plan de ville',
       'plan_cadastral': 'Plan cadastral',
@@ -17,6 +17,8 @@
     var _target
     var _selectTarget
     var _drawSimpleGeom = false
+    var _map = false
+    var _markerColor
 
     sitnLayers.sitnCurrentBaseLayer = new ol.layer.Tile()
 
@@ -72,11 +74,12 @@
       _selectTarget = options['selectTarget']
       _drawSimpleGeom = options['drawSimpleGeom'] // controls wether or not an user can draw multiple geometries
       let _mainbar
-      let _map = new ol.Map({
+      _map = new ol.Map({
         target: _target,
         layers: [
           sitnLayers.sitnCurrentBaseLayer,
-          _vectorLayer
+          new ol.layer.Vector({ source: _drawSource }),
+          new ol.layer.Vector({ source: _markerSource })
         ],
         view: sitnLayers.view
       })
@@ -123,7 +126,7 @@
               if (!features.getLength()) console.log('Select an object first...')
               else console.log(features.getLength() + ' object(s) deleted.')
               for (var i = 0, f; (f = features.item(i)); i++) {
-                _vectorLayer.getSource().removeFeature(f)
+                _drawSource.removeFeature(f)
               }
               selectCtrl.getInteraction().getFeatures().clear()
             }
@@ -147,7 +150,7 @@
             title: 'Point',
             interaction: new ol.interaction.Draw({
               type: 'Point',
-              source: _vectorLayer.getSource()
+              source: _drawSource
             })
           })
           editbar.addControl(pedit)
@@ -159,7 +162,7 @@
               title: 'LineString',
               interaction: new ol.interaction.Draw({
                 type: 'LineString',
-                source: _vectorLayer.getSource(),
+                source: _drawSource,
                 // Count inserted points
                 geometryFunction: function (coordinates, geometry) {
                   if (geometry) {
@@ -199,7 +202,7 @@
               title: 'Polygon',
               interaction: new ol.interaction.Draw({
                 type: 'Polygon',
-                source: _vectorLayer.getSource(),
+                source: _drawSource,
                 // Count inserted points
                 geometryFunction: function (coordinates, geometry) {
                   this.nbpts = coordinates[0].length
@@ -240,6 +243,7 @@
         });
       }
     }
+
     sitnLayers.loadWKT = function (wkt) {
       let format = new ol.format.WKT()
       let data = wkt;
@@ -247,16 +251,65 @@
         dataProjection: _crs,
         featureProjection: _crs
       })
-      _vectorLayer.getSource().addFeatures(features)
+      _drawSource.addFeatures(features)
     }
 
     sitnLayers.getWKTData = function () {
-      let features = _vectorLayer.getSource().getFeatures()
+      let features = _drawSource.getFeatures()
       if (features) {
         let wktData = new ol.format.WKT().writeFeatures(features)
         return wktData
       }
     }
+
+    /**
+     * Adds a marker based on coordinates: an array of 2 numbers
+     * and clears another existing maker before. The color is optional
+     */
+    sitnLayers.addMarker = function (coordinates, color) {
+      _markerColor = color
+      _markerSource.clear()
+      let marker = new ol.Feature({
+        geometry: new ol.geom.Point(coordinates)
+      })
+      marker.setStyle(new ol.style.Style({
+        image: new ol.style.Icon({
+          anchor: [0.5, 1],
+          color: _markerColor || '#8959A8',
+          opacity: 1,
+          src: '../img/marker.svg'
+        })
+      }))
+      _markerSource.addFeature(marker)
+    }
+
+    /**
+     * Updates marker position based
+     * on coordinates: an array of 2 numbers
+     */
+    sitnLayers.updateMarker = function (coordinates) {
+      sitnLayers.addMarker(coordinates)
+    }
+
+    /**
+     * Removes marker
+     */
+    sitnLayers.removeMarker = function () {
+      _markerSource.clear()
+    }
+
+    /**
+     * Recenters the map based
+     * on coordinates: an array of 2 numbers
+     */
+    sitnLayers.recenterMap = function (coordinates, zoomLevel) {
+      if (_map) {
+        let view = _map.getView()
+        view.setCenter(coordinates)
+        view.setZoom(zoomLevel)
+      }
+    }
+
     return sitnLayers
   }
 
