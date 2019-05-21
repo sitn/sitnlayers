@@ -61,7 +61,11 @@
     <hr>
 
     <h3>Exemple 2</h3>
-    <p>Edition avec export WKT</p>
+    <p>Edition de géométries simples ou multiples avec export WKT</p>
+    <div class="form-group">
+      <label for="simplegeom">Géométrie simple</label>
+      <input id="simplegeom" type="checkbox" onclick="toggleSimple()">
+    </div>
     <div id="sitn-map-2" class="map"></div>
     <div class="form-group">
       <label for="outputwkt">Résultat de l'export</label>
@@ -81,12 +85,20 @@
           'createPoint',
           'createLineString',
           'createPolygon'
-        ]
+        ], 
+        drawSimpleGeom: false // controle des géométries simples à l'initialisation
       })
+      $('#simplegeom').prop("checked", false)
 
       function save() {
         data = map2.getWKTData()
         $('#outputwkt').html(data)
+      }
+
+      function toggleSimple() {
+        // Il est également possible de switcher entre des géométries simples ou
+        // multiples en appelant setSimpleGeom(<param>) et en lui passant comme <param> true ou false
+        map2.setSimpleGeom($('#simplegeom').prop("checked"));
       }
 
     </script>
