@@ -61,7 +61,7 @@
     sitnLayers.setSimpleGeom = function (value) {
       _drawSimpleGeom = value
       if (_drawSimpleGeom && _drawSource.getFeatures().length > 1) {
-        lastFeature = _drawSource.getFeatures().slice(-1)[0]
+        let lastFeature = _drawSource.getFeatures().slice(-1)[0]
         _drawSource.clear()
         _drawSource.addFeature(lastFeature)
       }
@@ -310,6 +310,161 @@
       }
     }
 
+    sitnLayers.searchBox = function (config) {
+      var searchLayer = new ol.layer.Vector({ source: new ol.source.Vector() })
+      if (_map) {
+        _map.addLayer(searchLayer)
+      }
+      var width = '300px'
+
+      if (config.width) {
+        width = config.width;
+      }
+
+      // alias list for category names
+      var catClean = {
+        "adresses_sitn": "Adresses",
+        "axe_rue": "Axes et rues",
+        "batiments_ofs": "Bâtiments OFS",
+        "communes": "Communes",
+        "ImmeublesCanton": "Biens-fonds",
+        "localite": "Localités",
+        "nom_local_lieu_dit": "Noms locaux et Lieux-dits",
+        "search_arrets_tp": "Arrêts trans. publics",
+        "search_cours_eau": "Cours d'eau",
+        "search_satac": "N° SATAC",
+        "point_interet": "Points d'intérêt",
+        "search_uap_publique": "Unités d'aménagement publiques"
+      };
+
+      // create required divs
+      document.getElementById(config.div).innerHTML = '<input id=placeInput type=text/>' +
+        '<ol id=selectable class=orderedList style="position: absolute; z-index: 100"; background-color: white;></ol>';
+      $('#' + config.div).width(width);
+
+      //start setting up events
+      $("#placeInput").val("Recherche un lieu ou un objet géographique");
+
+      $("#placeInput").focusin(function () {
+        $("#placeInput").val("");
+          searchLayer.getSource().clear();
+      });
+
+      $("#placeInput").focusout(function () {
+        $("#selectable").hide();
+      });
+
+      $("#selectable").hide();
+      //stop setting up events
+
+      //start get data from server
+      var inputTerm = "";
+      var recCopy = "";
+
+      $("#placeInput").keyup(function () {
+        inputTerm = $("#placeInput").val();
+        if (inputTerm.length > 2) {
+          $.ajax({
+            url: "https://sitn.ne.ch/production/wsgi/fulltextsearch",
+            crossDomain: true,
+            data: {
+              limit: 20,
+              query: inputTerm
+            },
+            success: function (rec) {
+              // get the results
+              if (rec.features.length == 0) {
+                document.getElementById("selectable").innerHTML = "Aucun résultat";
+                $("#selectable").show();
+                return;
+              }
+              // process results: group by categories
+              var itLength = rec.features.length;
+              var cat = new Array();
+              // get categories
+              for (let i = 0; i < itLength; i++) {
+                cat.push(rec.features[i].properties.layer_name);
+              }
+              // sort categories in ascending order and keep only unique
+              cat.sort();
+              var catUnique = [];
+              catUnique.push(cat[0]);
+              for (let i = 1; i < cat.length; i++) {
+                if (cat[i] != cat[i - 1]) {
+                  catUnique.push(cat[i]);
+                }
+              }
+              // group the features by categories and fill the ordered list used for place selection
+              recCopy = $.extend(true, {}, rec);
+              var index = 0;
+              var listItems = "";
+              var catTest, catName;
+              for (let i = 0; i < catUnique.length; i++) {
+                catTest = catUnique[i];
+                $.each(catClean, function (key, val) {
+                  if (catTest === key) {
+                    catName = val;
+                  }
+                });
+                listItems += "<div class=categories><b>" + catName + "</b></div>";
+                for (var j = 0; j < itLength; j++) {
+                  if (catUnique[i].toUpperCase() == rec.features[j].properties.layer_name.toUpperCase()) {
+                    recCopy.features[index] = rec.features[j];
+                    listItems += "<li class=listItem>" + rec.features[j].properties.label + "</li>";
+                    index += 1;
+                  }
+                }
+              }
+              document.getElementById("selectable").innerHTML = listItems;
+              $("#selectable").show();
+            },
+            error: function () {
+              $("#placeInput").val("Échec de la recherche")
+            }
+          });
+        } else if (!inputTerm) {
+          searchLayer.getSource().clear();
+        }
+      });
+      //stop get data from server
+
+      // fill selectable list and zoom to selected feature
+      $(function () {
+        $("#selectable").selectable({
+          stop: function () {
+            var result = $("#select-result").empty();
+            $(".ui-selected", this).each(function () {
+              var index = $("#selectable li").index(this);
+              if (index != -1) {
+                $("#placeInput").val(recCopy.features[index].properties.label);
+                if (_map) {
+                  var geojson_format = new ol.format.GeoJSON();
+                  searchLayer.getSource().clear();
+                  var nGeom = recCopy.features[index].geometry.coordinates.length;
+                  // geometry is not empty
+                  if (nGeom != 0) {
+                    searchLayer.getSource().addFeatures(geojson_format.readFeatures(recCopy.features[index]));
+                  } else { //geometry is empty;
+                    if (recCopy.features[index].bbox.length > 1) {
+                      var point = new ol.geom.Point(recCopy.features[index].bbox[0], recCopy.features[index].bbox[1]);
+                      var pointFeature = new ol.Feature(point);
+                      searchLayer.addFeatures(pointFeature);
+                    }
+                  }
+                  if (recCopy.features[index].geometry == 'Point') {
+                    _map.ZoomTo(10);
+                  } else {
+                    _map.getView().fit(recCopy.features[index].bbox);
+                  }
+                }
+                result.append(" #" + (index + 1));
+                $("#selectable").hide();
+              }
+            });
+          }
+        });
+      });
+    }
     return sitnLayers
   }
 
