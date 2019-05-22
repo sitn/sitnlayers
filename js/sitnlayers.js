@@ -330,18 +330,25 @@
 
       // alias list for category names
       var catClean = {
-        "adresses_sitn": "Adresses",
-        "axe_rue": "Axes et rues",
-        "batiments_ofs": "Bâtiments OFS",
-        "communes": "Communes",
-        "ImmeublesCanton": "Biens-fonds",
-        "localite": "Localités",
-        "nom_local_lieu_dit": "Noms locaux et Lieux-dits",
-        "search_arrets_tp": "Arrêts trans. publics",
-        "search_cours_eau": "Cours d'eau",
+        "neophytes": "Plantes invasives",
         "search_satac": "N° SATAC",
+        "search_entree_sortie": "Entrée/sortie autoroute",
+        "rt16_giratoires": "Giratoires",
+        "batiments_ofs": "Bâtiments regBL et n° egid",
+        "axe_mistra": "Routes et axes",
+        "search_arrets_tp": "Arrêts transports publics",
+        "ImmeublesCantonHistorique": "Biens-fonds historiques",
         "point_interet": "Points d'intérêt",
-        "search_uap_publique": "Unités d'aménagement publiques"
+        "axe_rue": "Axes et rues",
+        "nom_local_lieu_dit": "Noms locaux et lieux-dits",
+        "search_cours_eau": "Cours d'eau",
+        "ImmeublesCanton": "Biens-fonds",
+        "search_fo_administrations": "Administrations forestières",
+        "search_uap_publique": "Unité d'aménagement publique",
+        "adresses_sitn": "Adresses",
+        "localite": "Localité",
+        "search_fo09": "Secours en forêt",
+        "search_conc_hydr": "Concessions hydrauliques"
       };
 
       // create required divs
@@ -461,8 +468,9 @@
                       searchLayer.addFeatures(pointFeature);
                     }
                   }
-                  if (recCopy.features[index].geometry == 'Point') {
-                    _map.ZoomTo(10);
+                  if (recCopy.features[index].geometry.type == 'Point') {
+                    _map.getView().fit(recCopy.features[index].bbox);
+                    _map.getView().setZoom(12);
                   } else {
                     _map.getView().fit(recCopy.features[index].bbox);
                   }
