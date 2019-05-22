@@ -277,7 +277,7 @@
           anchor: [0.5, 1],
           color: _markerColor || '#8959A8',
           opacity: 1,
-          src: '../img/marker.svg'
+          src: 'img/marker.svg'
         })
       }))
       _markerSource.addFeature(marker)
