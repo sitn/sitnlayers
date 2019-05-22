@@ -315,10 +315,17 @@
       if (_map) {
         _map.addLayer(searchLayer)
       }
-      var width = '300px'
+      var width = 'auto'
 
       if (config.width) {
         width = config.width;
+      }
+
+      if (config) {
+        var inputclasses = config['inputclasses'] || ['']
+        var resultclasses = config['resultclasses'] || ['sitn-search-result']
+        var headerclasses = config['headerclasses'] || ['']
+        var itemclasses = config['itemclasses'] || ['']
       }
 
       // alias list for category names
@@ -338,16 +345,18 @@
       };
 
       // create required divs
-      document.getElementById(config.div).innerHTML = '<input id=placeInput type=text/>' +
-        '<ol id=selectable class=orderedList style="position: absolute; z-index: 100"; background-color: white;></ol>';
-      $('#' + config.div).width(width);
+      document.getElementById(config.target).innerHTML = '<input id=placeInput type=text class="' +
+        inputclasses.join(' ') + '"/>' +
+        '<ol id="selectable" class=" ' + resultclasses.join(' ') +
+        '"></ol>';
+      $('#' + config.target).width(width);
 
       //start setting up events
       $("#placeInput").val("Recherche un lieu ou un objet géographique");
 
       $("#placeInput").focusin(function () {
         $("#placeInput").val("");
-          searchLayer.getSource().clear();
+        searchLayer.getSource().clear();
       });
 
       $("#placeInput").focusout(function () {
@@ -406,11 +415,12 @@
                     catName = val;
                   }
                 });
-                listItems += "<div class=categories><b>" + catName + "</b></div>";
+                listItems += '<div class="' + headerclasses.join(' ') + '"><b>' + catName + "</b></div>";
                 for (var j = 0; j < itLength; j++) {
                   if (catUnique[i].toUpperCase() == rec.features[j].properties.layer_name.toUpperCase()) {
                     recCopy.features[index] = rec.features[j];
-                    listItems += "<li class=listItem>" + rec.features[j].properties.label + "</li>";
+                    listItems += '<li class="' + itemclasses.join(' ') + '">'
+                      + rec.features[j].properties.label + "</li>";
                     index += 1;
                   }
                 }
@@ -464,6 +474,29 @@
           }
         });
       });
+
+      var css = `
+      .sitn-search-result {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        float: left;
+        min-width: 10rem;
+        padding: .5rem 0;
+        margin: .125rem 0 0;
+        text-align: left;
+        list-style: none;
+        background-color: #fff;
+        background-clip: padding-box;
+      }`;
+      var head = document.head || document.getElementsByTagName('head')[0];
+      var style = document.createElement('style');
+
+      head.appendChild(style);
+
+      style.type = 'text/css';
+      style.appendChild(document.createTextNode(css));
     }
     return sitnLayers
   }

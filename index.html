@@ -188,9 +188,9 @@
     <hr>
 
     <h3>Exemple 5</h3>
-    <p>Recherche</p>
+    <p>Fonctionnalité de recherche</p>
     <div class="form-group">
-      <div id="search-box"></div>
+      <div class="dropdown" style="cursor: pointer;" id="search-box"></div>
     </div>
     <div id="sitn-map-5" class="map"></div>
 
@@ -201,9 +201,14 @@
         target: 'sitn-map-5'
       })
 
+      // Création du champ de recherche
       searchBox = map5.searchBox({
-        div: 'search-box',
-        map: map5
+        target: 'search-box', // l'élecment <div> cible dans lequel sera placé la recherche
+        map: map5, // la carte sur laquelle le zoom doit être fait
+        inputclasses: ['form-control'], // classes css pour le champ texte, optionnelles
+        resultclasses: ['dropdown-menu'], // classes css pour la liste des résultats, optionnelles
+        headerclasses: ['dropdown-header'], // classes css pour le titre des sections, optionnelles
+        itemclasses: ['dropdown-item'], // classes css pour les items, optionnelles
       })
     </script>
 
