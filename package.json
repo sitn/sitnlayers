@@ -1,0 +1,22 @@
+{
+  "name": "sitnlayers",
+  "version": "1.0.0",
+  "description": "An openlayers widget that allows drawing and retrieving geometries with sitn base layers.",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maltaesousa/sitnlayers.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maltaesousa/sitnlayers/issues"
+  },
+  "homepage": "https://github.com/maltaesousa/sitnlayers#readme",
+  "devDependencies": {
+    "eslint": "^5.16.0"
+  }
+}
