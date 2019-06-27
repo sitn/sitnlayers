@@ -66,6 +66,8 @@
     <div class="form-group">
       <label for="simplegeom">Géométrie simple</label>
       <input id="simplegeom" type="checkbox" onclick="toggleSimple()">
+      <button class="btn btn-dark" onclick="getCenter2()">Obtenir le centre</button>
+      <label><span class="badge" id="getcoorde2"></span> <span class="badge badge-secondary" id="getcoordn2"></span></label>
     </div>
     <div id="sitn-map-2" class="map"></div>
     <div class="form-group">
@@ -100,6 +102,19 @@
         // Il est également possible de switcher entre des géométries simples ou
         // multiples en appelant setSimpleGeom(<param>) et en lui passant comme <param> true ou false
         map2.setSimpleGeom($('#simplegeom').prop("checked"));
+      }
+
+      // obtenir une paire de coordonnées
+      getCenter2 = function() {
+        // on passe true à getCenterPoint si on veux recenter la carte
+        let center = map2.getCenterPoint(true)
+        if (center[0] > 0) {
+          $('#getcoorde2').text(center[0]).addClass('badge-secondary').removeClass('badge-warning')
+          $('#getcoordn2').text(center[1])
+        } else {
+          $('#getcoorde2').text("Aucun objet présent sur la carte").addClass('badge-warning').removeClass('badge-secondary')
+          $('#getcoordn2').empty()
+        }
       }
 
     </script>
@@ -147,6 +162,8 @@
       <button class="btn btn-info" onclick="updateMarker()">Mettre à jour</button>
       <button class="btn btn-danger" onclick="map4.removeMarker()">Supprimer</button>
       <button class="btn btn-dark" onclick="recenterMap()">Recentrer la carte</button>
+      <button class="btn btn-dark" onclick="getCenter()">Obtenir le centre</button>
+      <label><span class="badge" id="getcoorde"></span> <span class="badge badge-secondary" id="getcoordn"></span></label>
     </div>
     <div id="sitn-map-4" class="map"></div>
 
@@ -177,7 +194,20 @@
       recenterMap = function() {
         map4.recenterMap(getCoord(), 14)
       }
-      
+
+      // obtenir une paire de coordonnées
+      getCenter = function() {
+        // on passe true à getCenterPoint si on veux recenter la carte
+        let center = map4.getCenterPoint(true)
+        if (center[0] > 0) {
+          $('#getcoorde').text(center[0]).addClass('badge-secondary').removeClass('badge-warning')
+          $('#getcoordn').text(center[1])
+        } else {
+          $('#getcoorde').text("Aucun objet présent sur la carte").addClass('badge-warning').removeClass('badge-secondary')
+          $('#getcoordn').empty()
+        }
+      }
+
     </script>
 
     <hr>
