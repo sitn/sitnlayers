@@ -310,6 +310,30 @@
       }
     }
 
+    /**
+     * Gets center point of the extent an optionnaly recenters de map
+     */
+    sitnLayers.getCenterPoint = function (recenter) {
+      let center = [0,0]
+      let extent
+      if (_drawSource.getFeatures().length > 0) {
+        extent = _drawSource.getExtent()
+        center = ol.extent.getCenter(extent)
+        
+      } else if (_drawSource.getFeatures.length === 0 && _markerSource.getFeatures().length > 0) {
+        extent = _markerSource.getExtent()
+        center = ol.extent.getCenter(_markerSource.getExtent())
+      }
+      if (recenter && center[0] !== 0) { 
+        if (Math.round(extent[0]) == Math.round(extent[2])) {
+          sitnLayers.recenterMap(center, 14)
+        } else {
+          _map.getView().fit(extent) }
+        }
+      return center
+    }
+
+
     sitnLayers.searchBox = function (config) {
       var searchLayer = new ol.layer.Vector({ source: new ol.source.Vector() })
       if (_map) {
