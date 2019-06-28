@@ -507,21 +507,21 @@
         });
       });
 
-      var css = `
-      .sitn-search-result {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        z-index: 1000;
-        float: left;
-        min-width: 10rem;
-        padding: .5rem 0;
-        margin: .125rem 0 0;
-        text-align: left;
-        list-style: none;
-        background-color: #fff;
-        background-clip: padding-box;
-      }`;
+      var css = ' \
+      .sitn-search-result { \
+        position: absolute; \
+        top: 100%; \
+        left: 0; \
+        z-index: 1000; \
+        float: left; \
+        min-width: 10rem; \
+        padding: .5rem 0; \
+        margin: .125rem 0 0; \
+        text-align: left; \
+        list-style: none; \
+        background-color: #fff; \
+        background-clip: padding-box; \
+      }';
       var head = document.head || document.getElementsByTagName('head')[0];
       var style = document.createElement('style');
 
