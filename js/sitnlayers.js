@@ -245,7 +245,9 @@
     }
 
     sitnLayers.loadWKT = function (wkt) {
-      let format = new ol.format.WKT()
+      let format = new ol.format.WKT({
+        splitCollection: true
+      })
       let data = wkt;
       let features = format.readFeatures(data, {
         dataProjection: _crs,
