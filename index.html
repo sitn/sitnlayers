@@ -20,7 +20,8 @@
       width: 100%;
     }
   </style>
-  <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=Element.prototype.classList,URL,Object.assign"></script>
+  <script
+    src="https://cdn.polyfill.io/v2/polyfill.min.js?features=Element.prototype.classList,URL,Object.assign"></script>
   <script src="assets/jquery/jquery-3.3.1.min.js"></script>
   <script src="assets/jquery-ui/jquery-ui.min.js"></script>
   <script src="assets/proj4/proj4.js"></script>
@@ -33,12 +34,16 @@
 <body>
   <div class="jumbotron text-center">
     <h1>sitnLayers</h1>
+    <p>Cette page a pour vocation de démontrer les possibilités de sitnLayers par le biais d'exemples. Les petits
+      exemples
+      fonctionnels sont documentés dans le code.</p>
   </div>
   <div class="container">
     <h3>Exemple 1</h3>
     <p>Affiche un WKT</p>
     <div class="form-group">
-      <textarea class="form-control" name="inputwkt" id="inputwkt" rows="2">POLYGON((2540000 1203000,2550000 1213000,2560000 1203000,2540000 1203000))</textarea>
+      <textarea class="form-control" name="inputwkt" id="inputwkt"
+        rows="2">POLYGON((2540000 1203000,2550000 1213000,2560000 1203000,2540000 1203000))</textarea>
     </div>
     <div class="form-group">
       <button class="btn btn-primary" onclick="loadData()">Charger</button>
@@ -51,24 +56,46 @@
       map1.createMap({
         target: 'sitn-map'
       })
-      
-      loadData = function() {
+
+      loadData = function () {
         var wkt = $('#inputwkt').val()
         map1.loadWKT(wkt)
       }
-      
+
     </script>
 
     <hr>
 
     <h3>Exemple 2</h3>
-    <p>Edition de géométries simples ou multiples avec export WKT</p>
-    <div class="form-group">
-      <label for="simplegeom">Géométrie simple</label>
-      <input id="simplegeom" type="checkbox" onclick="toggleSimple()">
-      <button class="btn btn-dark" onclick="getCenter2()">Obtenir le centre</button>
-      <label><span class="badge" id="getcoorde2"></span> <span class="badge badge-secondary" id="getcoordn2"></span></label>
-    </div>
+    <p>Edition de géométries simples ou multiples avec export WKT, changement de couleur et épaisseur du calque de
+      dessin.</p>
+    <form name="form2" class="form-group">
+      <div class="form-row">
+        <div class="col-2">
+          <div class="form-check mt-2">
+            <input class="form-check-input mb-2" id="simplegeom" type="checkbox" onclick="toggleSimple()">
+            <label class="form-check-label mb-2" for="simplegeom">Géométrie simple</label>
+          </div>
+        </div>
+        <div class="col">
+          <button class="btn btn-dark mb-2" onclick="getCenter2()" type="button">Obtenir le centre</button>
+          <label class="mb-2"><span class="badge" id="getcoorde2"></span> <span class="badge badge-secondary"
+              id="getcoordn2"></span></label>
+        </div>
+        <div class="col-2">
+          <input class="form-control mb-2" id="width2" type="number" placeholder="Épaisseur"
+            onchange="changeWidth2(this.value)">
+        </div>
+        <div class="col-3">
+          <select class="form-control mb-2" name="color2" id="color2" onchange="changeColor2(this.value)">
+            <option value="black" selected disabled hidden>Choisissez une couleur</option>
+            <option value="cornflowerblue">Bleuet</option>
+            <option value="crimson">Cramoisi</option>
+            <option value="orchid">Orchidée</option>
+          </select>
+        </div>
+      </div>
+    </form>
     <div id="sitn-map-2" class="map"></div>
     <div class="form-group">
       <label for="outputwkt">Résultat de l'export</label>
@@ -88,8 +115,10 @@
           'createPoint',
           'createLineString',
           'createPolygon'
-        ], 
-        drawSimpleGeom: false // controle des géométries simples à l'initialisation
+        ],
+        drawSimpleGeom: false, // controle des géométries simples à l'initialisation
+        drawColor: 'orange', // couleur du calque de dessin
+        drawWidth: 4 // épaisseur pour le calque de dessin
       })
       $('#simplegeom').prop("checked", false)
 
@@ -105,7 +134,7 @@
       }
 
       // obtenir une paire de coordonnées
-      getCenter2 = function() {
+      getCenter2 = function () {
         // on passe true à getCenterPoint si on veux recenter la carte
         let center = map2.getCenterPoint(true)
         if (center[0] > 0) {
@@ -117,12 +146,30 @@
         }
       }
 
+      // changer l'épaisseur
+      changeWidth2 = function (width) {
+        map2.setDrawStyle({
+          drawWidth: width
+        })
+      }
+
+      // changer la couleur
+      changeColor2 = function (color) {
+        map2.setDrawStyle({
+          drawColor: color
+        })
+      }
+
+      $(document).ready(function () {
+        document.forms['form2'].reset();
+      });
+
     </script>
 
     <hr>
 
     <h3>Exemple 3</h3>
-    <p>Changement du fond de carte</p>
+    <p>Changement du fond de carte et zoom minimums et maximums bloqués</p>
     <div class="form-group">
       <label for="theme-selector">Sélectionnez votre thème</label>
       <select class="form-control" name="theme-selector" id="theme-selector"></select>
@@ -139,7 +186,9 @@
           'plan_cadastral',
           'ortho'
         ],
-        selectTarget: 'theme-selector'
+        selectTarget: 'theme-selector',
+        minZoom: 5, // minimum possible is 0
+        maxZoom: 13 // maximum possible is 28
       })
     </script>
 
@@ -163,7 +212,8 @@
       <button class="btn btn-danger" onclick="map4.removeMarker()">Supprimer</button>
       <button class="btn btn-dark" onclick="recenterMap()">Recentrer la carte</button>
       <button class="btn btn-dark" onclick="getCenter()">Obtenir le centre</button>
-      <label><span class="badge" id="getcoorde"></span> <span class="badge badge-secondary" id="getcoordn"></span></label>
+      <label><span class="badge" id="getcoorde"></span> <span class="badge badge-secondary"
+          id="getcoordn"></span></label>
     </div>
     <div id="sitn-map-4" class="map"></div>
 
@@ -175,28 +225,28 @@
       })
 
       // construction du tableau de coordonnées à partir des inputs
-      getCoord = function() {
+      getCoord = function () {
         return [$('#coorde').val(), $('#coordn').val()]
       }
 
-      // ajouter un marker en lui passant une couleur (optionnel)
-      addMarker = function() {
+      // ajouter un marker en lui passant une couleur (optionnelle)
+      addMarker = function () {
         map4.addMarker(getCoord(), "#4286f4")
       }
 
       // mettre à jour un marker
-      updateMarker = function() {
+      updateMarker = function () {
         map4.updateMarker(getCoord())
       }
 
       // recentrer la carte à partir d'une paire 
       // de coordonées et d'un niveau de zoom
-      recenterMap = function() {
+      recenterMap = function () {
         map4.recenterMap(getCoord(), 14)
       }
 
       // obtenir une paire de coordonnées
-      getCenter = function() {
+      getCenter = function () {
         // on passe true à getCenterPoint si on veux recenter la carte
         let center = map4.getCenterPoint(true)
         if (center[0] > 0) {
@@ -223,7 +273,8 @@
       // Création de la carte
       map5 = new SitnMap()
       map5.createMap({
-        target: 'sitn-map-5'
+        target: 'sitn-map-5',
+        searchColor: 'magenta'
       })
 
       // Création du champ de recherche
