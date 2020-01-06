@@ -17,10 +17,19 @@
     var _target
     var _selectTarget
     var _drawSimpleGeom = false
+    var _drawColor = 'cornflowerblue'
+    var _drawFillColor
+    var _drawWidth = 4
+    var _searchColor = 'red'
     var _map = false
     var _markerColor
+    var _minZoom = 0
+    var _maxZoom = 28
 
     sitnLayers.sitnCurrentBaseLayer = new ol.layer.Tile()
+    sitnLayers.sitnDrawLayer = new ol.layer.Vector({
+      source: _drawSource
+    }),
 
     // projection
     proj4.defs(_crs,
@@ -40,9 +49,9 @@
         let _result = _parser.read(response)
         sitnLayers.WMTSOptions = ol.source.WMTS.optionsFromCapabilities(
           _result, {
-            layer: layerName,
-            matrixSet: _crs
-          })
+          layer: layerName,
+          matrixSet: _crs
+        })
         let source = new ol.source.WMTS(sitnLayers.WMTSOptions)
         sitnLayers.sitnCurrentBaseLayer.setSource(source)
       })
@@ -67,22 +76,55 @@
       }
     }
 
+    /**
+     * Sets color and width to draw layer
+     */
+    sitnLayers.setDrawStyle = function (options) {
+      _drawColor = ol.color.asArray(options['drawColor'] || _drawColor)
+      _drawWidth = options['drawWidth'] || _drawWidth
+      let _drawFillColor = [
+        _drawColor[0],
+        _drawColor[1],
+        _drawColor[2],
+        _drawColor[3] / 2
+      ]
+      sitnLayers.sitnDrawLayer.setStyle( new ol.style.Style({
+        fill: new ol.style.Fill({ color: _drawFillColor}),
+        stroke: new ol.style.Stroke({ color: _drawColor, width: _drawWidth }),
+        image: new ol.style.Circle({
+          fill: new ol.style.Fill({ color: _drawFillColor}),
+          stroke: new ol.style.Stroke({ color: _drawColor, width: _drawWidth / 2 }),
+          radius: 5
+        })
+      }))
+    }
+
     sitnLayers.createMap = function (options) {
       _buttons = options['buttons']
       _baselayers = options['baseLayers']
       _target = options['target']
       _selectTarget = options['selectTarget']
       _drawSimpleGeom = options['drawSimpleGeom'] // controls wether or not an user can draw multiple geometries
+      _drawColor = options['drawColor'] || _drawColor
+      _drawWidth = options['drawWidth'] || _drawWidth
+      _searchColor = options['searchColor'] || _searchColor
+      _minZoom = options['minZoom'] || _minZoom
+      _maxZoom = options['maxZoom'] || _maxZoom
+      _drawFillColor
       let _mainbar
+      sitnLayers.setDrawStyle({})
       _map = new ol.Map({
         target: _target,
         layers: [
           sitnLayers.sitnCurrentBaseLayer,
-          new ol.layer.Vector({ source: _drawSource }),
+          sitnLayers.sitnDrawLayer,
           new ol.layer.Vector({ source: _markerSource })
         ],
         view: sitnLayers.view
       })
+      sitnLayers.view.setZoom(options['minZoom'] || 4)
+      sitnLayers.view.setMinZoom(_minZoom)
+      sitnLayers.view.setMaxZoom(_maxZoom)
 
       /**
        * Creates select options, sets first baseLayer as default
@@ -245,7 +287,9 @@
     }
 
     sitnLayers.loadWKT = function (wkt) {
-      let format = new ol.format.WKT()
+      let format = new ol.format.WKT({
+        splitCollection: true
+      })
       let data = wkt;
       let features = format.readFeatures(data, {
         dataProjection: _crs,
@@ -314,28 +358,44 @@
      * Gets center point of the extent an optionnaly recenters de map
      */
     sitnLayers.getCenterPoint = function (recenter) {
-      let center = [0,0]
+      let center = [0, 0]
       let extent
       if (_drawSource.getFeatures().length > 0) {
         extent = _drawSource.getExtent()
         center = ol.extent.getCenter(extent)
-        
+
       } else if (_drawSource.getFeatures.length === 0 && _markerSource.getFeatures().length > 0) {
         extent = _markerSource.getExtent()
         center = ol.extent.getCenter(_markerSource.getExtent())
       }
-      if (recenter && center[0] !== 0) { 
+      if (recenter && center[0] !== 0) {
         if (Math.round(extent[0]) == Math.round(extent[2])) {
           sitnLayers.recenterMap(center, 14)
         } else {
-          _map.getView().fit(extent) }
+          _map.getView().fit(extent)
         }
+      }
       return center
     }
 
-
     sitnLayers.searchBox = function (config) {
-      var searchLayer = new ol.layer.Vector({ source: new ol.source.Vector() })
+      var searchLayer = new ol.layer.Vector({
+        source: new ol.source.Vector(),
+        style: new ol.style.Style({
+          fill: new ol.style.Fill({ color: 'yellow'}),
+          stroke: new ol.style.Stroke({ color: _searchColor, width: 8 }),
+          image: new ol.style.RegularShape({
+            fill: new ol.style.Fill({ color: 'yellow'}),
+            stroke: new ol.style.Stroke({ color: _searchColor, width: 4 }),
+            points: 4,
+            radius: 10,
+            radius2: 0,
+            angle: Math.PI / 4
+          })
+        }),
+        opacity: 0.5
+      })
+
       if (_map) {
         _map.addLayer(searchLayer)
       }
