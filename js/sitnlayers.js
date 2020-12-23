@@ -488,7 +488,7 @@
         inputTerm = $('#placeInput').val();
         if (inputTerm.length > 2) {
           $.ajax({
-            url: 'https://sitn.ne.ch/production/wsgi/search',
+            url: "https://sitn.ne.ch/search",
             crossDomain: true,
             data: {
               limit: 20,
