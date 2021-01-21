@@ -113,7 +113,7 @@
     sitnLayers.createMap = function (options) {
       _buttons = options.buttons;
       _baselayers = options.baseLayers;
-      _wmslayers = options.wmslayers
+      _wmslayers = options.wmslayers;
       _target = options.target;
       _selectTarget = options.selectTarget;
       _drawSimpleGeom = options.drawSimpleGeom; // controls wether or not an user can draw multiple geometries
