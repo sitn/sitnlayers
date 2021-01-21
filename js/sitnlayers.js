@@ -136,7 +136,7 @@
               serverType: 'mapserver'
             })
           })
-        )
+        );
       }
       _map = new ol.Map({
         target: _target,
