@@ -289,6 +289,25 @@
     </script>
 
     <hr>
+
+    <h3>Exemple 6</h3>
+    <p>Couche WMS. Toutes les couches présentes sur le géoportail public peuvent être ajoutées à sitnLayers.</p>
+    <div class="form-group">
+      <div class="dropdown" style="cursor: pointer;" id="search-box"></div>
+    </div>
+    <div id="sitn-map-6" class="map"></div>
+
+    <script>
+      // Création de la carte
+      map6 = new SitnMap()
+      map6.createMap({
+        target: 'sitn-map-6',
+        wmslayers: ['poi_administration']
+      })
+    </script>
+
+    <hr>
+
   </div>
 </body>
 

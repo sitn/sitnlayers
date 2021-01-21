@@ -12,6 +12,7 @@
     const _extent = [2420000, 1030000, 2900000, 1350000];
     const _crs = 'EPSG:2056';
     const _WMTSurl = 'https://sitn.ne.ch/web_getcapabilities/WMTSGetCapabilities95.xml';
+    const _WMSurl = 'https://sitn.ne.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng';
     const _drawSource = new ol.source.Vector();
     const _markerSource = new ol.source.Vector();
     const _sitnBaseLayers = {
@@ -21,6 +22,7 @@
     };
     let _buttons = [];
     let _baselayers = [];
+    let _wmslayers = [];
     let _target;
     let _selectTarget;
     let _drawSimpleGeom = false;
@@ -37,6 +39,7 @@
     sitnLayers.sitnDrawLayer = new ol.layer.Vector({
       source: _drawSource,
     });
+    sitnLayers.sitnWMSLayers = [];
 
     // projection
     proj4.defs(_crs,
@@ -110,6 +113,7 @@
     sitnLayers.createMap = function (options) {
       _buttons = options.buttons;
       _baselayers = options.baseLayers;
+      _wmslayers = options.wmslayers;
       _target = options.target;
       _selectTarget = options.selectTarget;
       _drawSimpleGeom = options.drawSimpleGeom; // controls wether or not an user can draw multiple geometries
@@ -121,11 +125,25 @@
       _drawFillColor;
       let _mainbar;
       sitnLayers.setDrawStyle({});
+
+      if (_wmslayers) {
+        sitnLayers.sitnWMSLayers.push(
+          new ol.layer.Image({
+            extent: _extent,
+            source: new ol.source.ImageWMS({
+              url: _WMSurl,
+              params: { 'LAYERS': _wmslayers.join(',') },
+              serverType: 'mapserver'
+            })
+          })
+        );
+      }
       _map = new ol.Map({
         target: _target,
         layers: [
           sitnLayers.sitnCurrentBaseLayer,
           sitnLayers.sitnDrawLayer,
+          ...sitnLayers.sitnWMSLayers,
           new ol.layer.Vector({ source: _markerSource }),
         ],
         view: sitnLayers.view,
