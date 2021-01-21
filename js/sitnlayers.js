@@ -132,10 +132,10 @@
             extent: _extent,
             source: new ol.source.ImageWMS({
               url: _WMSurl,
-              params: { 'LAYERS': _wmslayers.join(',') },
-              serverType: 'mapserver'
-            })
-          })
+              params: { LAYERS: _wmslayers.join(',') },
+              serverType: 'mapserver',
+            }),
+          }),
         );
       }
       _map = new ol.Map({
@@ -506,7 +506,7 @@
         inputTerm = $('#placeInput').val();
         if (inputTerm.length > 2) {
           $.ajax({
-            url: "https://sitn.ne.ch/search",
+            url: 'https://sitn.ne.ch/search',
             crossDomain: true,
             data: {
               limit: 20,

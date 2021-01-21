@@ -46,22 +46,23 @@
         rows="2">POLYGON((2540000 1203000,2550000 1213000,2560000 1203000,2540000 1203000))</textarea>
     </div>
     <div class="form-group">
-      <button class="btn btn-primary" onclick="loadData()">Charger</button>
+      <button id="map1-load" class="btn btn-primary">Charger</button>
     </div>
     <div id="sitn-map" class="map"></div>
 
     <script>
+      /* global SitnMap, $ */
       // Création de la carte
-      map1 = new SitnMap()
+      const map1 = new SitnMap();
       map1.createMap({
-        target: 'sitn-map'
-      })
+        target: 'sitn-map',
+      });
 
-      loadData = function () {
-        var wkt = $('#inputwkt').val()
-        map1.loadWKT(wkt)
+      function loadData() {
+        const wkt = $('#inputwkt').val();
+        map1.loadWKT(wkt);
       }
-
+      $('#map1-load').click(loadData);
     </script>
 
     <hr>
@@ -73,21 +74,20 @@
       <div class="form-row">
         <div class="col-2">
           <div class="form-check mt-2">
-            <input class="form-check-input mb-2" id="simplegeom" type="checkbox" onclick="toggleSimple()">
+            <input class="form-check-input mb-2" id="simplegeom" type="checkbox">
             <label class="form-check-label mb-2" for="simplegeom">Géométrie simple</label>
           </div>
         </div>
         <div class="col">
-          <button class="btn btn-dark mb-2" onclick="getCenter2()" type="button">Obtenir le centre</button>
+          <button id="map2-center" class="btn btn-dark mb-2" type="button">Obtenir le centre</button>
           <label class="mb-2"><span class="badge" id="getcoorde2"></span> <span class="badge badge-secondary"
               id="getcoordn2"></span></label>
         </div>
         <div class="col-2">
-          <input class="form-control mb-2" id="width2" type="number" placeholder="Épaisseur"
-            onchange="changeWidth2(this.value)">
+          <input class="form-control mb-2" id="width2" type="number" placeholder="Épaisseur">
         </div>
         <div class="col-3">
-          <select class="form-control mb-2" name="color2" id="color2" onchange="changeColor2(this.value)">
+          <select class="form-control mb-2" name="color2" id="color2">
             <option value="black" selected disabled hidden>Choisissez une couleur</option>
             <option value="cornflowerblue">Bleuet</option>
             <option value="crimson">Cramoisi</option>
@@ -102,68 +102,73 @@
       <textarea class="form-control" name="output" id="outputwkt" rows="2"></textarea>
     </div>
     <div class="form-group">
-      <button class="btn btn-primary" onclick="save()">Sauvegarder</button>
+      <button id="map2save" class="btn btn-primary">Sauvegarder</button>
     </div>
 
     <script>
+      /* global SitnMap, $ */
       // Création de la carte
-      map2 = new SitnMap()
+      const map2 = new SitnMap();
       map2.createMap({
         target: 'sitn-map-2',
         buttons: [
           'edit',
           'createPoint',
           'createLineString',
-          'createPolygon'
+          'createPolygon',
         ],
         drawSimpleGeom: false, // controle des géométries simples à l'initialisation
         drawColor: 'orange', // couleur du calque de dessin
-        drawWidth: 4 // épaisseur pour le calque de dessin
-      })
-      $('#simplegeom').prop("checked", false)
+        drawWidth: 4, // épaisseur pour le calque de dessin
+      });
+      $('#simplegeom').prop('checked', false);
 
       function save() {
-        data = map2.getWKTData()
-        $('#outputwkt').html(data)
+        const data = map2.getWKTData();
+        $('#outputwkt').html(data);
       }
+      $('#map2save').click(save);
 
       function toggleSimple() {
         // Il est également possible de switcher entre des géométries simples ou
         // multiples en appelant setSimpleGeom(<param>) et en lui passant comme <param> true ou false
-        map2.setSimpleGeom($('#simplegeom').prop("checked"));
+        map2.setSimpleGeom($('#simplegeom').prop('checked'));
       }
+      $('#simplegeom').change(toggleSimple);
 
       // obtenir une paire de coordonnées
-      getCenter2 = function () {
+      function getCenter2() {
         // on passe true à getCenterPoint si on veux recenter la carte
-        let center = map2.getCenterPoint(true)
+        const center = map2.getCenterPoint(true);
         if (center[0] > 0) {
-          $('#getcoorde2').text(center[0]).addClass('badge-secondary').removeClass('badge-warning')
-          $('#getcoordn2').text(center[1])
+          $('#getcoorde2').text(center[0]).addClass('badge-secondary').removeClass('badge-warning');
+          $('#getcoordn2').text(center[1]);
         } else {
-          $('#getcoorde2').text("Aucun objet présent sur la carte").addClass('badge-warning').removeClass('badge-secondary')
-          $('#getcoordn2').empty()
+          $('#getcoorde2').text('Aucun objet présent sur la carte').addClass('badge-warning').removeClass('badge-secondary');
+          $('#getcoordn2').empty();
         }
       }
+      $('#map2-center').click(getCenter2);
 
       // changer l'épaisseur
-      changeWidth2 = function (width) {
+      function changeWidth2() {
         map2.setDrawStyle({
-          drawWidth: width
-        })
+          drawWidth: $('#width2').val(),
+        });
       }
+      $('#width2').change(changeWidth2);
 
       // changer la couleur
-      changeColor2 = function (color) {
+      function changeColor2() {
         map2.setDrawStyle({
-          drawColor: color
-        })
+          drawColor: $('#color2').val(),
+        });
       }
+      $('#color2').change(changeColor2);
 
-      $(document).ready(function () {
-        document.forms['form2'].reset();
+      $(document).ready(() => {
+        document.forms.form2.reset();
       });
-
     </script>
 
     <hr>
@@ -177,19 +182,20 @@
     <div id="sitn-map-3" class="map"></div>
 
     <script>
+      /* global SitnMap */
       // Création de la carte
-      map3 = new SitnMap()
+      const map3 = new SitnMap();
       map3.createMap({
         target: 'sitn-map-3',
         baseLayers: [
           'plan_ville',
           'plan_cadastral',
-          'ortho'
+          'ortho',
         ],
         selectTarget: 'theme-selector',
         minZoom: 5, // minimum possible is 0
-        maxZoom: 13 // maximum possible is 28
-      })
+        maxZoom: 13, // maximum possible is 28
+      });
     </script>
 
     <hr>
@@ -207,57 +213,61 @@
       </div>
     </div>
     <div class="form-group">
-      <button class="btn btn-primary" onclick="addMarker()">Ajouter</button>
-      <button class="btn btn-info" onclick="updateMarker()">Mettre à jour</button>
+      <button id="map5-add-marker" class="btn btn-primary">Ajouter</button>
+      <button id="map5-upd-marker" class="btn btn-info">Mettre à jour</button>
       <button class="btn btn-danger" onclick="map4.removeMarker()">Supprimer</button>
-      <button class="btn btn-dark" onclick="recenterMap()">Recentrer la carte</button>
-      <button class="btn btn-dark" onclick="getCenter()">Obtenir le centre</button>
+      <button id="map5-recenter" class="btn btn-dark">Recentrer la carte</button>
+      <button id="map5-get-center" class="btn btn-dark">Obtenir le centre</button>
       <label><span class="badge" id="getcoorde"></span> <span class="badge badge-secondary"
           id="getcoordn"></span></label>
     </div>
     <div id="sitn-map-4" class="map"></div>
 
     <script>
+      /* global SitnMap, $ */
       // Création de la carte
-      map4 = new SitnMap()
+      const map4 = new SitnMap();
       map4.createMap({
-        target: 'sitn-map-4'
-      })
+        target: 'sitn-map-4',
+      });
 
       // construction du tableau de coordonnées à partir des inputs
-      getCoord = function () {
-        return [$('#coorde').val(), $('#coordn').val()]
+      function getCoord() {
+        return [$('#coorde').val(), $('#coordn').val()];
       }
 
       // ajouter un marker en lui passant une couleur (optionnelle)
-      addMarker = function () {
-        map4.addMarker(getCoord(), "#4286f4")
+      function addMarker() {
+        map4.addMarker(getCoord(), '#4286f4');
       }
+      $('#map5-add-marker').click(addMarker);
 
       // mettre à jour un marker
-      updateMarker = function () {
-        map4.updateMarker(getCoord())
+      function updateMarker() {
+        map4.updateMarker(getCoord());
       }
+      $('#map5-upd-marker').click(updateMarker);
 
-      // recentrer la carte à partir d'une paire 
+      // recentrer la carte à partir d'une paire
       // de coordonées et d'un niveau de zoom
-      recenterMap = function () {
-        map4.recenterMap(getCoord(), 14)
+      function recenterMap() {
+        map4.recenterMap(getCoord(), 14);
       }
+      $('#map5-recenter').click(recenterMap);
 
       // obtenir une paire de coordonnées
-      getCenter = function () {
+      function getCenter() {
         // on passe true à getCenterPoint si on veux recenter la carte
-        let center = map4.getCenterPoint(true)
+        const center = map4.getCenterPoint(true);
         if (center[0] > 0) {
-          $('#getcoorde').text(center[0]).addClass('badge-secondary').removeClass('badge-warning')
-          $('#getcoordn').text(center[1])
+          $('#getcoorde').text(center[0]).addClass('badge-secondary').removeClass('badge-warning');
+          $('#getcoordn').text(center[1]);
         } else {
-          $('#getcoorde').text("Aucun objet présent sur la carte").addClass('badge-warning').removeClass('badge-secondary')
-          $('#getcoordn').empty()
+          $('#getcoorde').text('Aucun objet présent sur la carte').addClass('badge-warning').removeClass('badge-secondary');
+          $('#getcoordn').empty();
         }
       }
-
+      $('#map5-get-center').click(getCenter);
     </script>
 
     <hr>
@@ -270,22 +280,23 @@
     <div id="sitn-map-5" class="map"></div>
 
     <script>
+      /* global SitnMap */
       // Création de la carte
-      map5 = new SitnMap()
+      const map5 = new SitnMap();
       map5.createMap({
         target: 'sitn-map-5',
-        searchColor: 'magenta'
-      })
+        searchColor: 'magenta',
+      });
 
       // Création du champ de recherche
-      searchBox = map5.searchBox({
+      map5.searchBox({
         target: 'search-box', // l'élecment <div> cible dans lequel sera placé la recherche
         map: map5, // la carte sur laquelle le zoom doit être fait
         inputclasses: ['form-control'], // classes css pour le champ texte, optionnelles
         resultclasses: ['dropdown-menu'], // classes css pour la liste des résultats, optionnelles
         headerclasses: ['dropdown-header'], // classes css pour le titre des sections, optionnelles
         itemclasses: ['dropdown-item'], // classes css pour les items, optionnelles
-      })
+      });
     </script>
 
     <hr>
@@ -298,12 +309,13 @@
     <div id="sitn-map-6" class="map"></div>
 
     <script>
+      /* global SitnMap */
       // Création de la carte
-      map6 = new SitnMap()
+      const map6 = new SitnMap();
       map6.createMap({
         target: 'sitn-map-6',
-        wmslayers: ['poi_administration']
-      })
+        wmslayers: ['poi_administration'],
+      });
     </script>
 
     <hr>
