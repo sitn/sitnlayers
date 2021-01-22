@@ -13,9 +13,10 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2018,
   },
+  plugins: ['eslint-plugin-html'],
   rules: {
     'max-len': [
-      "error", {"code": 120}
-    ]
+      'error', { code: 120 },
+    ],
   },
 };
