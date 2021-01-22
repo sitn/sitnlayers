@@ -304,17 +304,67 @@
     <h3>Exemple 6</h3>
     <p>Couche WMS. Toutes les couches présentes sur le géoportail public peuvent être ajoutées à sitnLayers.</p>
     <div class="form-group">
-      <div class="dropdown" style="cursor: pointer;" id="search-box"></div>
+      <div id="map6-toc">
+      </div>
     </div>
     <div id="sitn-map-6" class="map"></div>
+    <div class="form-group">
+      <label for="outputjson">Résultat de l'export au format GeoJSON:</label>
+      <textarea class="form-control" name="output" id="outputjson" rows="2"></textarea>
+    </div>
+    <div class="form-group">
+      <button id="map6save" class="btn btn-primary">Sauvegarder</button>
+    </div>
 
     <script>
-      /* global SitnMap */
+      /* global SitnMap, $ */
       // Création de la carte
       const map6 = new SitnMap();
+
+      // Pour avoir des traductions des couches
+      const layers = {
+        eg38_geotherm_canepo_statut: 'Profondeur de forage maximale',
+        eg37_geotherm_zones_exclues: 'Zones d\'exclusion de forage',
+        eg36_geotherm_carte_finale: 'Restrictions de forage - Sites pollués',
+      };
       map6.createMap({
         target: 'sitn-map-6',
-        wmslayers: ['poi_administration'],
+        wmslayers: Object.keys(layers), // array de layers
+        buttons: [
+          'createPoint',
+        ],
+        drawSimpleGeom: true,
+        pointStyle: 'marker', // il faut un svg dans img
+        drawColor: '#cc0000',
+      });
+      
+      // getLayerByName retourne le layer selon son nom.
+      function toggleLayerVisibility(event) {
+        const layer = map6.getLayerByName(event.data.layername);
+        if (layer.getVisible()) {
+          layer.setVisible(false);
+        } else {
+          layer.setVisible(true);
+        }
+      }
+
+      function save6() {
+        const data = map6.getGeoJSONData();
+        $('#outputjson').html(data);
+      }
+      $('#map6save').click(save6);
+
+      Object.keys(layers).forEach((layername) => {
+        $('#map6-toc').append(
+          `
+          <div class="form-check form-check-inline">
+          <input type="checkbox" checked class="form-check-input" id="${layername}"
+          >
+          <label class="form-check-label" for="${layername}"> ${layers[layername]}</label>
+          </div>
+          `,
+        );
+        $(`#${layername}`).change({ layername }, toggleLayerVisibility);
       });
     </script>
 
