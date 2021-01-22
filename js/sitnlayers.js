@@ -14,12 +14,15 @@
     const _WMTSurl = 'https://sitn.ne.ch/web_getcapabilities/WMTSGetCapabilities95.xml';
     const _WMSurl = 'https://sitn.ne.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng';
     const _drawSource = new ol.source.Vector();
+    const _markerColor = '#8959A8';
     const _markerSource = new ol.source.Vector();
     const _sitnBaseLayers = {
       plan_ville: 'Plan de ville',
       plan_cadastral: 'Plan cadastral',
       ortho: 'Images aériennes',
     };
+    // A dictionnary containing named layers in the form of { layer_name: ol.layer.Image(), }
+    const _sitnWMSLayers = {};
     let _buttons = [];
     let _baselayers = [];
     let _wmslayers = [];
@@ -29,9 +32,9 @@
     let _drawColor = 'cornflowerblue';
     let _drawFillColor;
     let _drawWidth = 4;
+    let _pointStyle = 'circle';
     let _searchColor = 'red';
     let _map = false;
-    let _markerColor;
     let _minZoom = 0;
     let _maxZoom = 28;
 
@@ -39,7 +42,6 @@
     sitnLayers.sitnDrawLayer = new ol.layer.Vector({
       source: _drawSource,
     });
-    sitnLayers.sitnWMSLayers = [];
 
     // projection
     proj4.defs(_crs,
@@ -52,6 +54,14 @@
       extent: _extent,
     });
 
+    sitnLayers._createMarkerStyle = function (color) {
+      return new ol.style.Icon({
+        anchor: [0.5, 1],
+        color,
+        opacity: 1,
+        src: 'img/marker.svg',
+      });
+    };
     // TODO: get out source from here when base layer selection will be implemented
     sitnLayers.setSource = function (layerName) {
       $.ajax(_WMTSurl).then((response) => {
@@ -93,20 +103,28 @@
     sitnLayers.setDrawStyle = function (options) {
       _drawColor = ol.color.asArray(options.drawColor || _drawColor);
       _drawWidth = options.drawWidth || _drawWidth;
+      _pointStyle = options.pointStyle || _pointStyle;
       const _drawFillColor = [
         _drawColor[0],
         _drawColor[1],
         _drawColor[2],
         _drawColor[3] / 2,
       ];
-      sitnLayers.sitnDrawLayer.setStyle(new ol.style.Style({
-        fill: new ol.style.Fill({ color: _drawFillColor }),
-        stroke: new ol.style.Stroke({ color: _drawColor, width: _drawWidth }),
-        image: new ol.style.Circle({
+
+      let _imageStyle;
+      if (_pointStyle === 'marker') {
+        _imageStyle = this._createMarkerStyle(_drawColor);
+      } else {
+        _imageStyle = new ol.style.Circle({
           fill: new ol.style.Fill({ color: _drawFillColor }),
           stroke: new ol.style.Stroke({ color: _drawColor, width: _drawWidth / 2 }),
           radius: 5,
-        }),
+        });
+      }
+      sitnLayers.sitnDrawLayer.setStyle(new ol.style.Style({
+        fill: new ol.style.Fill({ color: _drawFillColor }),
+        stroke: new ol.style.Stroke({ color: _drawColor, width: _drawWidth }),
+        image: _imageStyle,
       }));
     };
 
@@ -119,6 +137,7 @@
       _drawSimpleGeom = options.drawSimpleGeom; // controls wether or not an user can draw multiple geometries
       _drawColor = options.drawColor || _drawColor;
       _drawWidth = options.drawWidth || _drawWidth;
+      _pointStyle = options.pointStyle || _pointStyle;
       _searchColor = options.searchColor || _searchColor;
       _minZoom = options.minZoom || _minZoom;
       _maxZoom = options.maxZoom || _maxZoom;
@@ -127,23 +146,23 @@
       sitnLayers.setDrawStyle({});
 
       if (_wmslayers) {
-        sitnLayers.sitnWMSLayers.push(
-          new ol.layer.Image({
+        _wmslayers.forEach((layername) => {
+          _sitnWMSLayers[layername] = new ol.layer.Image({
             extent: _extent,
             source: new ol.source.ImageWMS({
               url: _WMSurl,
               params: { LAYERS: _wmslayers.join(',') },
               serverType: 'mapserver',
             }),
-          }),
-        );
+          });
+        });
       }
       _map = new ol.Map({
         target: _target,
         layers: [
           sitnLayers.sitnCurrentBaseLayer,
+          ...Object.values(_sitnWMSLayers), // insert array of wms layers
           sitnLayers.sitnDrawLayer,
-          ...sitnLayers.sitnWMSLayers,
           new ol.layer.Vector({ source: _markerSource }),
         ],
         view: sitnLayers.view,
@@ -170,6 +189,9 @@
         this.setSource('plan_ville');
       }
 
+      /**
+       * Will set up button bar with editing activated by default
+       */
       if (_buttons) {
         _mainbar = new ol.control.Bar();
         _map.addControl(_mainbar);
@@ -216,9 +238,14 @@
 
         // Add editing tools
         if (_buttons.indexOf('createPoint') !== -1) {
+          let active = true;
+          if (_buttons.indexOf('edit') !== -1) {
+            active = false;
+          }
           const pedit = new ol.control.Toggle({
             html: '<small class="fas fa-map-pin"></small>',
             title: 'Point',
+            active,
             interaction: new ol.interaction.Draw({
               type: 'Point',
               source: _drawSource,
@@ -323,6 +350,14 @@
       }
     };
 
+    sitnLayers.getLayerByName = function (layerName) {
+      return _sitnWMSLayers[layerName];
+    };
+
+    /**
+     * Loads WKT and adds it to _drawsource
+     * @param {String} wkt
+     */
     sitnLayers.loadWKT = function (wkt) {
       const format = new ol.format.WKT({
         splitCollection: true,
@@ -335,6 +370,9 @@
       _drawSource.addFeatures(features);
     };
 
+    /**
+     * Exports _drawSource as WKT
+     */
     sitnLayers.getWKTData = function () {
       const features = _drawSource.getFeatures();
       if (features) {
@@ -345,23 +383,30 @@
     };
 
     /**
+     * Exports _drawsource as GeoJSON
+     */
+    sitnLayers.getGeoJSONData = function () {
+      const features = _drawSource.getFeatures();
+      if (features) {
+        const jsonData = new ol.format.GeoJSON().writeFeatures(features);
+        return jsonData;
+      }
+      return '';
+    };
+
+    /**
      * Adds a marker based on coordinates: an array of 2 numbers
      * and clears another existing maker before. The color is optional
      */
     sitnLayers.addMarker = function (coordinates, color) {
-      _markerColor = color;
       _markerSource.clear();
       const marker = new ol.Feature({
         geometry: new ol.geom.Point(coordinates),
       });
       marker.setStyle(new ol.style.Style({
-        image: new ol.style.Icon({
-          anchor: [0.5, 1],
-          color: _markerColor || '#8959A8',
-          opacity: 1,
-          src: 'img/marker.svg',
-        }),
+        image: this._createMarkerStyle(color || _markerColor),
       }));
+
       _markerSource.addFeature(marker);
     };
 
