@@ -151,7 +151,7 @@
             extent: _extent,
             source: new ol.source.ImageWMS({
               url: _WMSurl,
-              params: { LAYERS: _wmslayers.join(',') },
+              params: { LAYERS: layername },
               serverType: 'mapserver',
             }),
           });
