@@ -29,6 +29,7 @@
     let _target;
     let _selectTarget;
     let _drawSimpleGeom = false;
+    let _markerImage = 'img/marker.svg';
     let _drawColor = 'cornflowerblue';
     let _drawFillColor;
     let _drawWidth = 4;
@@ -59,7 +60,7 @@
         anchor: [0.5, 1],
         color,
         opacity: 1,
-        src: 'img/marker.svg',
+        src: _markerImage,
       });
     };
     // TODO: get out source from here when base layer selection will be implemented
@@ -138,6 +139,7 @@
       _drawColor = options.drawColor || _drawColor;
       _drawWidth = options.drawWidth || _drawWidth;
       _pointStyle = options.pointStyle || _pointStyle;
+      _markerImage = options.markerImage || _markerImage;
       _searchColor = options.searchColor || _searchColor;
       _minZoom = options.minZoom || _minZoom;
       _maxZoom = options.maxZoom || _maxZoom;
