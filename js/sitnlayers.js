@@ -434,8 +434,8 @@
     sitnLayers.recenterMap = function (coordinates, zoomLevel) {
       if (_map) {
         const view = _map.getView();
-        view.setCenter(coordinates);
-        view.setZoom(zoomLevel);
+        const point = new ol.geom.Point(coordinates);
+        view.fit(point, { maxZoom: zoomLevel });
       }
     };
 
