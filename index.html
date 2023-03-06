@@ -8,8 +8,9 @@
   <meta http-equiv="Expires" content="0" />
   <link rel="stylesheet" href="assets/ol/ol.css" type="text/css">
   <link rel="stylesheet" href="assets/ol-ext/ol-ext.min.css" type="text/css">
-  <link rel="stylesheet" href="assets/fontawesome/css/all.css">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
   <style>
     .map {
       height: 400px;
@@ -20,10 +21,6 @@
       width: 100%;
     }
   </style>
-  <script
-    src="https://cdn.polyfill.io/v2/polyfill.min.js?features=Element.prototype.classList,URL,Object.assign"></script>
-  <script src="assets/jquery/jquery-3.3.1.min.js"></script>
-  <script src="assets/jquery-ui/jquery-ui.min.js"></script>
   <script src="assets/proj4/proj4.js"></script>
   <script src="assets/ol/ol.js"></script>
   <script src="assets/ol-ext/ol-ext.min.js"></script>
@@ -32,26 +29,26 @@
 </head>
 
 <body>
-  <div class="jumbotron text-center">
+  <div class="p-5 bg-secondary text-white rounded text-center">
     <h1>sitnLayers</h1>
     <p>Cette page a pour vocation de démontrer les possibilités de sitnLayers par le biais d'exemples. Les petits
       exemples
       fonctionnels sont documentés dans le code.</p>
   </div>
-  <div class="container">
+  <div class="container mt-4">
     <h3>Exemple 1</h3>
     <p>Affiche un WKT</p>
-    <div class="form-group">
+    <div class="form-group mb-2">
       <textarea class="form-control" name="inputwkt" id="inputwkt"
         rows="2">POLYGON((2540000 1203000,2550000 1213000,2560000 1203000,2540000 1203000))</textarea>
     </div>
-    <div class="form-group">
+    <div class="form-group mb-2">
       <button id="map1-load" class="btn btn-primary">Charger</button>
     </div>
     <div id="sitn-map" class="map"></div>
 
     <script>
-      /* global SitnMap, $ */
+      /* global SitnMap */
       // Création de la carte
       const map1 = new SitnMap();
       map1.createMap({
@@ -59,10 +56,10 @@
       });
 
       function loadData() {
-        const wkt = $('#inputwkt').val();
+        const wkt = document.getElementById('inputwkt').value;
         map1.loadWKT(wkt);
       }
-      $('#map1-load').click(loadData);
+      document.getElementById('map1-load').onclick = loadData;
     </script>
 
     <hr>
@@ -71,23 +68,24 @@
     <p>Edition de géométries simples ou multiples avec export WKT, changement de couleur et épaisseur du calque de
       dessin.</p>
     <form name="form2" class="form-group">
-      <div class="form-row">
-        <div class="col-2">
+      <div class="d-flex justify-content-between">
+        <div>
           <div class="form-check mt-2">
             <input class="form-check-input mb-2" id="simplegeom" type="checkbox">
             <label class="form-check-label mb-2" for="simplegeom">Géométrie simple</label>
           </div>
         </div>
-        <div class="col">
-          <button id="map2-center" class="btn btn-dark mb-2" type="button">Obtenir le centre des objets dessinés</button>
-          <label class="mb-2"><span class="badge" id="getcoorde2"></span> <span class="badge badge-secondary"
-              id="getcoordn2"></span></label>
+        <div class="ps-2 flex-grow-1">
+          <button id="map2-center" class="btn btn-dark mb-2" type="button">Obtenir le centre des objets
+            dessinés</button>
+          <span class="badge rounded-pill" id="getcoorde2"></span>
+          <span class="badge bg-secondary rounded-pill" id="getcoordn2"></span>
         </div>
-        <div class="col-2">
+        <div class="ps-2">
           <input class="form-control mb-2" id="width2" type="number" placeholder="Épaisseur">
         </div>
-        <div class="col-3">
-          <select class="form-control mb-2" name="color2" id="color2">
+        <div class="ps-2">
+          <select class="form-select mb-2" name="color2" id="color2">
             <option value="black" selected disabled hidden>Choisissez une couleur</option>
             <option value="cornflowerblue">Bleuet</option>
             <option value="crimson">Cramoisi</option>
@@ -97,7 +95,7 @@
       </div>
     </form>
     <div id="sitn-map-2" class="map"></div>
-    <div class="form-group">
+    <div class="form-group mb-2">
       <label for="outputwkt">Résultat de l'export</label>
       <textarea class="form-control" name="output" id="outputwkt" rows="2"></textarea>
     </div>
@@ -106,7 +104,7 @@
     </div>
 
     <script>
-      /* global SitnMap, $ */
+      /* global SitnMap */
       // Création de la carte
       const map2 = new SitnMap();
       map2.createMap({
@@ -121,63 +119,66 @@
         drawColor: 'orange', // couleur du calque de dessin
         drawWidth: 4, // épaisseur pour le calque de dessin
       });
-      $('#simplegeom').prop('checked', false);
+      const simpleGeomElement = document.getElementById('simplegeom');
+      const getcoorde2Element = document.getElementById('getcoorde2');
+      const getcoordn2Element = document.getElementById('getcoordn2');
+      simpleGeomElement.setAttribute('checked', false);
 
-      function save() {
+      document.getElementById('map2save').onclick = () => {
         const data = map2.getWKTData();
-        $('#outputwkt').html(data);
-      }
-      $('#map2save').click(save);
+        document.getElementById('outputwkt').innerHTML = data;
+      };
 
-      function toggleSimple() {
+      document.getElementById('simplegeom').onchange = () => {
         // Il est également possible de switcher entre des géométries simples ou
         // multiples en appelant setSimpleGeom(<param>) et en lui passant comme <param> true ou false
-        map2.setSimpleGeom($('#simplegeom').prop('checked'));
-      }
-      $('#simplegeom').change(toggleSimple);
+        map2.setSimpleGeom(simpleGeomElement.getAttribute('checked'));
+      };
 
       // obtenir une paire de coordonnées
-      function getCenter2() {
+      document.getElementById('map2-center').onclick = () => {
         // on passe true à getCenterPoint si on veux recenter la carte
         const center = map2.getCenterPoint(true);
         if (center[0] > 0) {
-          $('#getcoorde2').text(center[0]).addClass('badge-secondary').removeClass('badge-warning');
-          $('#getcoordn2').text(center[1]);
+          [getcoorde2Element.innerText, getcoordn2Element.innerText] = center;
+          getcoorde2Element.classList.add('bg-secondary');
+          getcoorde2Element.classList.remove('bg-warning');
         } else {
-          $('#getcoorde2').text('Aucun objet présent sur la carte').addClass('badge-warning').removeClass('badge-secondary');
-          $('#getcoordn2').empty();
+          getcoorde2Element.innerText = 'Aucun objet présent sur la carte';
+          getcoorde2Element.classList.add('bg-warning');
+          getcoorde2Element.classList.remove('bg-secondary');
+          getcoordn2Element.innerHTML = '';
         }
-      }
-      $('#map2-center').click(getCenter2);
+      };
 
       // changer l'épaisseur
-      function changeWidth2() {
+      document.getElementById('width2').onchange = (e) => {
         map2.setDrawStyle({
-          drawWidth: $('#width2').val(),
+          drawWidth: e.value,
         });
-      }
-      $('#width2').change(changeWidth2);
+      };
 
       // changer la couleur
-      function changeColor2() {
+      document.getElementById('color2').onchange = (e) => {
         map2.setDrawStyle({
-          drawColor: $('#color2').val(),
+          drawColor: e.value,
         });
-      }
-      $('#color2').change(changeColor2);
+      };
 
-      $(document).ready(() => {
-        document.forms.form2.reset();
-      });
+      document.onreadystatechange = () => {
+        if (document.readyState === 'complete') {
+          document.forms.form2.reset();
+        }
+      };
     </script>
 
     <hr>
 
     <h3>Exemple 3</h3>
     <p>Changement du fond de carte et zoom minimums et maximums bloqués</p>
-    <div class="form-group">
+    <div class="form-group mb-2">
       <label for="theme-selector">Sélectionnez votre thème</label>
-      <select class="form-control" name="theme-selector" id="theme-selector"></select>
+      <select class="form-select" name="theme-selector" id="theme-selector"></select>
     </div>
     <div id="sitn-map-3" class="map"></div>
 
@@ -203,78 +204,83 @@
     <h3>Exemple 4</h3>
     <p>Ajouter, modifier et supprimer un marker selon une paire de coordonnées Est-Nord. Recenter la carte.</p>
     <div class="row form-group">
-      <div class="col">
+      <div class="col-6">
         <label for="coorde">Est</label>
         <input class="form-control" type="number" name="coorde" id="coorde" value="2540000">
       </div>
-      <div class="col">
+      <div class="col-6">
         <label for="coorde">Nord</label>
         <input class="form-control" type="number" name="coordn" id="coordn" value="1203000">
       </div>
-    </div>
-    <div class="form-group">
-      <button id="map5-add-marker" class="btn btn-primary">Ajouter</button>
-      <button id="map5-upd-marker" class="btn btn-info">Mettre à jour</button>
-      <button class="btn btn-danger" onclick="map4.removeMarker()">Supprimer</button>
-      <button id="map5-recenter" class="btn btn-dark">Recentrer la carte</button>
-      <button id="map5-get-center" class="btn btn-dark">Obtenir le centre des objets dessinés</button>
-      <label><span class="badge" id="getcoorde"></span> <span class="badge badge-secondary"
-          id="getcoordn"></span></label>
+      <div class="col-12 my-2">
+        <div class="form-group">
+          <button id="map5-add-marker" class="btn btn-primary">Ajouter</button>
+          <button id="map5-upd-marker" class="btn btn-info">Mettre à jour</button>
+          <button class="btn btn-danger" onclick="map4.removeMarker()">Supprimer</button>
+          <button id="map5-recenter" class="btn btn-dark">Recentrer la carte</button>
+          <button id="map5-get-center" class="btn btn-dark">Obtenir le centre des objets dessinés</button>
+          <span class="badge rounded-pill" id="getcoorde"></span>
+          <span class="badge bg-secondary rounded-pill" id="getcoordn"></span>
+        </div>
+      </div>
     </div>
     <div id="sitn-map-4" class="map"></div>
 
     <script>
-      /* global SitnMap, $ */
+      /* global SitnMap */
       // Création de la carte
       const map4 = new SitnMap();
+      const coordeElement = document.getElementById('coorde');
+      const coordnElement = document.getElementById('coordn');
+      const getCoordeElement = document.getElementById('getcoorde');
+      const getCoordnElement = document.getElementById('getcoordn');
       map4.createMap({
         target: 'sitn-map-4',
       });
 
       // construction du tableau de coordonnées à partir des inputs
       function getCoord() {
-        return [$('#coorde').val(), $('#coordn').val()];
+        return [coordeElement.value, coordnElement.value];
       }
 
       // ajouter un marker en lui passant une couleur (optionnelle)
-      function addMarker() {
+      document.getElementById('map5-add-marker').onclick = () => {
         map4.addMarker(getCoord(), '#4286f4');
-      }
-      $('#map5-add-marker').click(addMarker);
+      };
 
       // mettre à jour un marker
-      function updateMarker() {
+      document.getElementById('map5-upd-marker').onclick = () => {
         map4.updateMarker(getCoord());
-      }
-      $('#map5-upd-marker').click(updateMarker);
+      };
 
       // recentrer la carte à partir d'une paire
       // de coordonées et d'un niveau de zoom
-      function recenterMap() {
-        map4.recenterMap(getCoord(), 14);
-      }
-      $('#map5-recenter').click(recenterMap);
+      document.getElementById('map5-recenter').onclick = () => {
+        map4.recenterMap(getCoord(), 10);
+      };
 
       // obtenir une paire de coordonnées
-      function getCenter() {
+      document.getElementById('map5-get-center').onclick = () => {
         // on passe true à getCenterPoint si on veux recenter la carte
         const center = map4.getCenterPoint(true);
         if (center[0] > 0) {
-          $('#getcoorde').text(center[0]).addClass('badge-secondary').removeClass('badge-warning');
-          $('#getcoordn').text(center[1]);
+          [getCoordeElement.innerText, getCoordnElement.innerText] = center;
+          getCoordeElement.classList.add('bg-secondary');
+          getCoordeElement.classList.remove('bg-warning');
         } else {
-          $('#getcoorde').text('Aucun objet présent sur la carte').addClass('badge-warning').removeClass('badge-secondary');
-          $('#getcoordn').empty();
+          getCoordeElement.innerText = 'Aucun objet présent sur la carte';
+          getCoordeElement.classList.add('bg-warning');
+          getCoordeElement.classList.remove('bg-secondary');
+          getCoordnElement.innerHTML = '';
         }
-      }
-      $('#map5-get-center').click(getCenter);
+      };
     </script>
 
     <hr>
 
     <h3>Exemple 5</h3>
     <p>Fonctionnalité de recherche</p>
-    <div class="form-group">
+    <div class="form-group mb-2">
       <div class="dropdown" style="cursor: pointer;" id="search-box"></div>
     </div>
     <div id="sitn-map-5" class="map"></div>
@@ -312,12 +318,12 @@
       <label for="outputjson">Résultat de l'export au format GeoJSON:</label>
       <textarea class="form-control" name="output" id="outputjson" rows="2"></textarea>
     </div>
-    <div class="form-group">
+    <div class="form-group mt-2">
       <button id="map6save" class="btn btn-primary">Sauvegarder</button>
     </div>
 
     <script>
-      /* global SitnMap, $ */
+      /* global SitnMap */
       // Création de la carte
       const map6 = new SitnMap();
 
@@ -338,10 +344,10 @@
         markerImage: 'img/marker.svg',
         drawColor: '#cc0000',
       });
-      
+
       // getLayerByName retourne le layer selon son nom.
-      function toggleLayerVisibility(event) {
-        const layer = map6.getLayerByName(event.data.layername);
+      function toggleLayerVisibility(element) {
+        const layer = map6.getLayerByName(element.id);
         if (layer.getVisible()) {
           layer.setVisible(false);
         } else {
@@ -349,27 +355,21 @@
         }
       }
 
-      function save6() {
+      document.getElementById('map6save').onclick = () => {
         const data = map6.getGeoJSONData();
-        $('#outputjson').html(data);
-      }
-      $('#map6save').click(save6);
+        document.getElementById('outputjson').innerHTML = data;
+      };
 
       Object.keys(layers).forEach((layername) => {
-        $('#map6-toc').append(
-          `
+        document.getElementById('map6-toc').innerHTML += `
           <div class="form-check form-check-inline">
-          <input type="checkbox" checked class="form-check-input" id="${layername}"
-          >
-          <label class="form-check-label" for="${layername}"> ${layers[layername]}</label>
-          </div>
-          `,
-        );
-        $(`#${layername}`).change({ layername }, toggleLayerVisibility);
+            <input type="checkbox" checked class="form-check-input" id="${layername}" onclick="toggleLayerVisibility(this)">
+            <label class="form-check-label" for="${layername}"> ${layers[layername]}</label>
+          </div>`;
       });
     </script>
 
-    <hr>
+    <hr class="my-5">
 
   </div>
 </body>

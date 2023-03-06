@@ -1,3 +1,7 @@
+/* eslint-disable no-console */
+/* eslint-disable max-len */
+/* eslint-disable guard-for-in */
+/* eslint-disable no-restricted-syntax */
 /* eslint-disable func-names */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-loop-func */
@@ -5,13 +9,13 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-shadow */
-/* global proj4, ol, $ */
+/* global proj4, ol */
 (function (window) {
   function sitnLayers() {
     const sitnLayers = {};
     const _extent = [2420000, 1030000, 2900000, 1350000];
     const _crs = 'EPSG:2056';
-    const _WMTSurl = 'https://sitn.ne.ch/web_getcapabilities/WMTSGetCapabilities95.xml';
+    const _WMTSurl = 'https://sitn.ne.ch/services/wmts?SERVICE=WMTS&REQUEST=GetCapabilities';
     const _WMSurl = 'https://sitn.ne.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng';
     const _drawSource = new ol.source.Vector();
     const _markerColor = '#8959A8';
@@ -65,14 +69,14 @@
     };
     // TODO: get out source from here when base layer selection will be implemented
     sitnLayers.setSource = function (layerName) {
-      $.ajax(_WMTSurl).then((response) => {
+      fetch(_WMTSurl).then((response) => response.text()).then((getCap) => {
         const _parser = new ol.format.WMTSCapabilities();
-        const _result = _parser.read(response);
+        const _result = _parser.read(getCap);
         sitnLayers.WMTSOptions = ol.source.WMTS.optionsFromCapabilities(
           _result, {
-            layer: layerName,
-            matrixSet: _crs,
-          },
+          layer: layerName,
+          matrixSet: _crs,
+        },
         );
         const source = new ol.source.WMTS(sitnLayers.WMTSOptions);
         sitnLayers.sitnCurrentBaseLayer.setSource(source);
@@ -178,14 +182,15 @@
        * or sets plan_ville if no _baselayers are defined
        */
       if (_baselayers) {
-        $.each(_baselayers, (key, value) => {
-          $(`#${_selectTarget}`)
-            .append(new Option(_sitnBaseLayers[value], value));
+        const selectElement = document.getElementById(_selectTarget);
+        Object.values(_baselayers).forEach((baselayer) => {
+          selectElement.append(new Option(_sitnBaseLayers[baselayer], baselayer));
         });
-        $(`#${_selectTarget}`).change(() => {
-          const newSource = $(`#${_selectTarget} option:selected`).val();
+
+        selectElement.onchange = () => {
+          const newSource = document.querySelector(`#${_selectTarget} option:checked`).value;
           sitnLayers.setSource(newSource);
-        });
+        };
         this.setSource(_baselayers[0]);
       } else {
         this.setSource('plan_ville');
@@ -211,7 +216,10 @@
           //  2- an option bar to delete / get information on the selected feature
           const sbar = new ol.control.Bar();
           const selectCtrl = new ol.control.Toggle({
-            html: '<small class="fas fa-mouse-pointer"></small>',
+            html: `
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cursor-fill" viewBox="0 0 16 16">
+                <path d="M14.082 2.182a.5.5 0 0 1 .103.557L8.528 15.467a.5.5 0 0 1-.917-.007L5.57 10.694.803 8.652a.5.5 0 0 1-.006-.916l12.728-5.657a.5.5 0 0 1 .556.103z"/>
+              </svg>`,
             title: 'Select',
             interaction: new ol.interaction.Select(),
             bar: sbar,
@@ -220,12 +228,14 @@
           });
 
           sbar.addControl(new ol.control.TextButton({
-            html: '<i class="fas fa-trash"></i>',
+            html: `
+            <svg class="bi" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+              <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+              <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+            </svg>`,
             title: 'Effacer',
             handleClick() {
               const features = selectCtrl.getInteraction().getFeatures();
-              // if (!features.getLength()) console.log('Select an object first...');
-              // else console.log(`${features.getLength()} object(s) deleted.`);
               let i = 0;
               do {
                 _drawSource.removeFeature(features.item(i));
@@ -245,7 +255,10 @@
             active = false;
           }
           const pedit = new ol.control.Toggle({
-            html: '<small class="fas fa-map-pin"></small>',
+            html: `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dot" viewBox="0 0 16 16">
+              <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
+            </svg>`,
             title: 'Point',
             active,
             interaction: new ol.interaction.Draw({
@@ -258,7 +271,10 @@
         if (_buttons.indexOf('createLineString') !== -1) {
           const ledit = new ol.control.Toggle(
             {
-              html: '<small class="fas fa-check fa-rotate-270 fa-flip-vertical"></small>',
+              html: `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-slash-lg" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M13.854 2.146a.5.5 0 0 1 0 .708l-11 11a.5.5 0 0 1-.708-.708l11-11a.5.5 0 0 1 .708 0Z"/>
+                </svg>`,
               title: 'LineString',
               interaction: new ol.interaction.Draw({
                 type: 'LineString',
@@ -278,14 +294,21 @@
               bar: new ol.control.Bar(
                 {
                   controls: [new ol.control.TextButton({
-                    html: '<i class="fas fa-undo"></i>',
+                    html: `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
+                      <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
+                    </svg>`,
                     title: 'Revenir en arrière',
                     handleClick() {
                       if (ledit.getInteraction().nbpts > 1) ledit.getInteraction().removeLastPoint();
                     },
                   }),
                   new ol.control.TextButton({
-                    html: '<i class="fas fa-check"></i>',
+                    html: `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
+                      <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
+                    </svg>`,
                     title: 'Terminer la construction',
                     handleClick() { // Prevent null objects on finishDrawing
                       if (ledit.getInteraction().nbpts > 2) ledit.getInteraction().finishDrawing();
@@ -302,7 +325,10 @@
         if (_buttons.indexOf('createPolygon') !== -1) {
           const fedit = new ol.control.Toggle(
             {
-              html: '<small class="fas fa-play fa-rotate-270"></small>',
+              html: `
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pentagon-fill" viewBox="0 0 16 16">
+                <path d="M7.685.256a.5.5 0 0 1 .63 0l7.421 6.03a.5.5 0 0 1 .162.538l-2.788 8.827a.5.5 0 0 1-.476.349H3.366a.5.5 0 0 1-.476-.35L.102 6.825a.5.5 0 0 1 .162-.538l7.42-6.03Z"/>
+              </svg>`,
               title: 'Polygon',
               interaction: new ol.interaction.Draw({
                 type: 'Polygon',
@@ -321,14 +347,21 @@
               bar: new ol.control.Bar(
                 {
                   controls: [new ol.control.TextButton({
-                    html: '<i class="fas fa-undo"></i>',
+                    html: `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
+                      <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
+                      <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
+                    </svg>`,
                     title: 'Revenir en arrière',
                     handleClick() {
                       if (fedit.getInteraction().nbpts > 1) fedit.getInteraction().removeLastPoint();
                     },
                   }),
                   new ol.control.TextButton({
-                    html: '<i class="fas fa-check"></i>',
+                    html: `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
+                      <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
+                    </svg>`,
                     title: 'Terminer la construction',
                     handleClick() { // Prevent null objects on finishDrawing
                       if (fedit.getInteraction().nbpts > 3) fedit.getInteraction().finishDrawing();
@@ -462,220 +495,188 @@
       return center;
     };
 
-    sitnLayers.searchBox = function (config) {
-      let inputclasses;
-      let resultclasses;
-      let headerclasses;
-      let itemclasses;
-      const searchLayer = new ol.layer.Vector({
-        source: new ol.source.Vector(),
-        style: new ol.style.Style({
+    sitnLayers._searchBoxConfig = {};
+    sitnLayers.searchBoxResultList = [];
+    sitnLayers._searchBoxCatClean = {
+      neophytes: 'Plantes invasives',
+      search_satac: 'N° SATAC',
+      search_entree_sortie: 'Entrée/sortie autoroute',
+      rt16_giratoires: 'Giratoires',
+      batiments_ofs: 'Bâtiments regBL et n° egid',
+      axe_mistra: 'Routes et axes',
+      search_arrets_tp: 'Arrêts transports publics',
+      ImmeublesCantonHistorique: 'Biens-fonds historiques',
+      point_interet: "Points d'intérêt",
+      axe_rue: 'Axes et rues',
+      nom_local_lieu_dit: 'Noms locaux et lieux-dits',
+      search_cours_eau: "Cours d'eau",
+      ImmeublesCanton: 'Biens-fonds',
+      search_fo_administrations: 'Administrations forestières',
+      search_uap_publique: "Unité d'aménagement publique",
+      adresses_sitn: 'Adresses',
+      localite: 'Localité',
+      search_fo09: 'Secours en forêt',
+      search_conc_hydr: 'Concessions hydrauliques',
+    };
+
+    sitnLayers.searchLayer = new ol.layer.Vector({
+      source: new ol.source.Vector(),
+      style: new ol.style.Style({
+        fill: new ol.style.Fill({ color: 'yellow' }),
+        stroke: new ol.style.Stroke({ color: _searchColor, width: 8 }),
+        image: new ol.style.RegularShape({
           fill: new ol.style.Fill({ color: 'yellow' }),
-          stroke: new ol.style.Stroke({ color: _searchColor, width: 8 }),
-          image: new ol.style.RegularShape({
-            fill: new ol.style.Fill({ color: 'yellow' }),
-            stroke: new ol.style.Stroke({ color: _searchColor, width: 4 }),
-            points: 4,
-            radius: 10,
-            radius2: 0,
-            angle: Math.PI / 4,
-          }),
+          stroke: new ol.style.Stroke({ color: _searchColor, width: 4 }),
+          points: 4,
+          radius: 10,
+          radius2: 0,
+          angle: Math.PI / 4,
         }),
-        opacity: 0.5,
+      }),
+      opacity: 0.5,
+    });
+
+    sitnLayers._searchBoxCreateTemplates = function () {
+      const template = document.createElement('template');
+      template.innerHTML = `<input
+        id="search"
+        class="${sitnLayers._searchBoxConfig.inputclasses.join(' ')}"
+        length="20"
+        maxlength="1000"
+        autocomplete="off"
+        autocorrect="off"
+        placeholder="Recherche un lieu ou un objet géographique" />
+          <div id="results" class="${sitnLayers._searchBoxConfig.resultclasses.join(' ')}"></div>`;
+      this.searchBoxInput = template.content.firstChild;
+      this.searchBoxResults = template.content.lastChild;
+      const targetElement = document.getElementById(this._searchBoxConfig.target);
+      targetElement.appendChild(sitnLayers.searchBoxInput);
+      targetElement.appendChild(sitnLayers.searchBoxResults);
+    };
+
+    sitnLayers._searchBoxRegisterEvents = function () {
+      this.searchBoxInput.addEventListener('input', (e) => this._searchBoxDoSearch(e));
+      this.searchBoxInput.addEventListener('focusin', () => this._searchBoxOnFocusIn());
+      this.searchBoxInput.addEventListener('focusout', () => this._searchBoxOnFocusOut());
+    };
+
+    sitnLayers._searchBoxOnFocusIn = function () {
+      this.ignoreBlur = false;
+    };
+
+    sitnLayers._searchBoxOnFocusOut = function () {
+      if (!this.ignoreBlur) {
+        this.searchBoxResults.style.display = 'none';
+        this.searchBoxResultList = [];
+      }
+    };
+
+    sitnLayers._searchBoxOnSelect = function (e) {
+      const result = this.searchBoxResultList[e.target.dataset.resultId];
+      const resultGeometry = result.geometry;
+      if (_map) {
+        const searchSource = this.searchLayer.getSource();
+        searchSource.clear();
+        if (resultGeometry.coordinates.length > 0) {
+          const geojsonFormat = new ol.format.GeoJSON();
+          searchSource.addFeatures(geojsonFormat.readFeatures(resultGeometry));
+          _map.getView().fit(result.bbox, { maxZoom: 12, padding: [50, 50, 50, 50] });
+        } else {
+          console.error('No geometry on search result!', result);
+        }
+      }
+      this._searchBoxOnFocusOut();
+    };
+
+    sitnLayers._clearSearch = function () {
+      this.searchBoxResultList = [];
+      this.searchBoxResults.innerHTML = '';
+      this.searchBoxResults.style.display = 'none';
+    };
+
+    sitnLayers._searchBoxDoSearch = function (e) {
+      const term = e.target.value;
+      if (term.length <= 0) {
+        this._clearSearch();
+        return;
+      }
+
+      const url = `https://sitn.ne.ch/search?limit=20&query=${term}`;
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => this._displayResults(data));
+    };
+
+    sitnLayers._displayResults = function (results) {
+      // First, group the results
+      const groupedResults = {};
+      results.features.forEach((result) => {
+        const type = result.properties.layer_name;
+        let resultList = null;
+        if (type in groupedResults) {
+          resultList = groupedResults[type];
+        } else {
+          resultList = [];
+          groupedResults[type] = resultList;
+        }
+        resultList.push(result);
       });
 
-      if (_map) {
-        _map.addLayer(searchLayer);
+      // Then, display the results by group
+      this._clearSearch();
+      if (results.features.length === 0) {
+        const title = document.createElement('li');
+        title.className = this._searchBoxConfig.headerclasses;
+        title.innerHTML = "Aucun résultat n'a été trouvé";
+        this.searchBoxResults.appendChild(title);
       }
-      let width = 'auto';
+      for (const type in groupedResults) {
+        // Create a title
+        const title = document.createElement('li');
+        title.className = this._searchBoxConfig.headerclasses;
 
-      if (config.width) {
-        width = config.width;
+        const titleText = document.createElement('span');
+        titleText.innerHTML = this._searchBoxCatClean[type];
+        title.appendChild(titleText);
+
+        this.searchBoxResults.appendChild(title);
+
+        // Create results
+        groupedResults[type].forEach((r) => {
+          const result = document.createElement('li');
+          result.className = this._searchBoxConfig.itemclasses;
+          this.searchBoxResultList[r.id] = r;
+          result.dataset.resultId = r.id;
+
+          result.onmousedown = () => { this.ignoreBlur = true; };
+          result.onclick = (e) => { this.ignoreBlur = false; this._searchBoxOnSelect(e); };
+
+          result.innerHTML = r.properties.label;
+          this.searchBoxResults.appendChild(result);
+        });
       }
+      this.searchBoxResults.style.display = 'block';
+    };
 
-      if (config) {
-        inputclasses = config.inputclasses || [''];
-        resultclasses = config.resultclasses || ['sitn-search-result'];
-        headerclasses = config.headerclasses || [''];
-        itemclasses = config.itemclasses || [''];
+    sitnLayers.searchBox = function (config) {
+      // Init config
+      if (!config.target) {
+        console.error('You need to give a target for searchbox');
       }
-
-      // alias list for category names
-      const catClean = {
-        neophytes: 'Plantes invasives',
-        search_satac: 'N° SATAC',
-        search_entree_sortie: 'Entrée/sortie autoroute',
-        rt16_giratoires: 'Giratoires',
-        batiments_ofs: 'Bâtiments regBL et n° egid',
-        axe_mistra: 'Routes et axes',
-        search_arrets_tp: 'Arrêts transports publics',
-        ImmeublesCantonHistorique: 'Biens-fonds historiques',
-        point_interet: "Points d'intérêt",
-        axe_rue: 'Axes et rues',
-        nom_local_lieu_dit: 'Noms locaux et lieux-dits',
-        search_cours_eau: "Cours d'eau",
-        ImmeublesCanton: 'Biens-fonds',
-        search_fo_administrations: 'Administrations forestières',
-        search_uap_publique: "Unité d'aménagement publique",
-        adresses_sitn: 'Adresses',
-        localite: 'Localité',
-        search_fo09: 'Secours en forêt',
-        search_conc_hydr: 'Concessions hydrauliques',
+      sitnLayers._searchBoxConfig = {
+        inputclasses: config.inputclasses || [''],
+        resultclasses: config.resultclasses || ['sitn-search-result'],
+        headerclasses: config.headerclasses || [''],
+        itemclasses: config.itemclasses || [''],
+        target: config.target,
       };
 
-      // create required divs
-      document.getElementById(config.target).innerHTML = `<input id=placeInput type=text class="${
-        inputclasses.join(' ')}"/>`
-        + `<ol id="selectable" class=" ${resultclasses.join(' ')
-        }"></ol>`;
-      $(`#${config.target}`).width(width);
+      sitnLayers._searchBoxCreateTemplates();
+      sitnLayers._searchBoxRegisterEvents();
 
-      // start setting up events
-      $('#placeInput').val('Recherche un lieu ou un objet géographique');
-
-      $('#placeInput').focusin(() => {
-        $('#placeInput').val('');
-        searchLayer.getSource().clear();
-      });
-
-      $('#placeInput').focusout(() => {
-        $('#selectable').hide();
-      });
-
-      $('#selectable').hide();
-      // stop setting up events
-
-      // start get data from server
-      let inputTerm = '';
-      let recCopy = '';
-
-      $('#placeInput').keyup(() => {
-        inputTerm = $('#placeInput').val();
-        if (inputTerm.length > 2) {
-          $.ajax({
-            url: 'https://sitn.ne.ch/search',
-            crossDomain: true,
-            data: {
-              limit: 20,
-              query: inputTerm,
-            },
-            success(rec) {
-              // get the results
-              if (rec.features.length === 0) {
-                document.getElementById('selectable').innerHTML = 'Aucun résultat';
-                $('#selectable').show();
-                return;
-              }
-              // process results: group by categories
-              const itLength = rec.features.length;
-              const cat = [];
-              // get categories
-              for (let i = 0; i < itLength; i++) {
-                cat.push(rec.features[i].properties.layer_name);
-              }
-              // sort categories in ascending order and keep only unique
-              cat.sort();
-              const catUnique = [];
-              catUnique.push(cat[0]);
-              for (let i = 1; i < cat.length; i++) {
-                if (cat[i] !== cat[i - 1]) {
-                  catUnique.push(cat[i]);
-                }
-              }
-              // group the features by categories and fill the ordered list used for place selection
-              recCopy = $.extend(true, {}, rec);
-              let index = 0;
-              let listItems = '';
-              let catTest; let
-                catName;
-              for (let i = 0; i < catUnique.length; i++) {
-                catTest = catUnique[i];
-                $.each(catClean, (key, val) => {
-                  if (catTest === key) {
-                    catName = val;
-                  }
-                });
-                listItems += `<div class="${headerclasses.join(' ')}"><b>${catName}</b></div>`;
-                for (let j = 0; j < itLength; j++) {
-                  if (catUnique[i].toUpperCase() === rec.features[j].properties.layer_name.toUpperCase()) {
-                    recCopy.features[index] = rec.features[j];
-                    listItems += `<li class="${itemclasses.join(' ')}">${
-                      rec.features[j].properties.label}</li>`;
-                    index += 1;
-                  }
-                }
-              }
-              document.getElementById('selectable').innerHTML = listItems;
-              $('#selectable').show();
-            },
-            error() {
-              $('#placeInput').val('Échec de la recherche');
-            },
-          });
-        } else if (!inputTerm) {
-          searchLayer.getSource().clear();
-        }
-      });
-      // stop get data from server
-
-      // fill selectable list and zoom to selected feature
-      $(() => {
-        $('#selectable').selectable({
-          stop() {
-            const result = $('#select-result').empty();
-            $('.ui-selected', this).each(function () {
-              const index = $('#selectable li').index(this);
-              if (index !== -1) {
-                $('#placeInput').val(recCopy.features[index].properties.label);
-                if (_map) {
-                  const geojsonFormat = new ol.format.GeoJSON();
-                  searchLayer.getSource().clear();
-                  const nGeom = recCopy.features[index].geometry.coordinates.length;
-                  // geometry is not empty
-                  if (nGeom !== 0) {
-                    searchLayer.getSource().addFeatures(geojsonFormat.readFeatures(recCopy.features[index]));
-                  } else if (recCopy.features[index].bbox.length > 1) { // geometry is empty
-                    const point = new ol.geom.Point(recCopy.features[index].bbox[0], recCopy.features[index].bbox[1]);
-                    const pointFeature = new ol.Feature(point);
-                    searchLayer.addFeatures(pointFeature);
-                  }
-                  if (recCopy.features[index].geometry.type === 'Point') {
-                    _map.getView().fit(recCopy.features[index].bbox);
-                    _map.getView().setZoom(12);
-                  } else {
-                    _map.getView().fit(recCopy.features[index].bbox);
-                  }
-                }
-                result.append(` #${index + 1}`);
-                $('#selectable').hide();
-              }
-            });
-          },
-        });
-      });
-
-      const css = ' \n'
-      + '.sitn-search-result { \n'
-      + '  position: absolute; \n'
-      + '  top: 100%; \n'
-      + '  left: 0; \n'
-      + '  z-index: 1000; \n'
-      + '  float: left; \n'
-      + '  min-width: 10rem; \n'
-      + '  padding: .5rem 0; \n'
-      + '  margin: .125rem 0 0; \n'
-      + '  text-align: left; \n'
-      + '  list-style: none; \n'
-      + '  background-color: #fff; \n'
-      + '  background-clip: padding-box; \n'
-      + '}';
-      const head = document.head || document.getElementsByTagName('head')[0];
-      const style = document.createElement('style');
-
-      head.appendChild(style);
-
-      style.type = 'text/css';
-      style.appendChild(document.createTextNode(css));
+      if (_map) {
+        _map.addLayer(sitnLayers.searchLayer);
+      }
     };
     return sitnLayers;
   }
