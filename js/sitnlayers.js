@@ -24,6 +24,7 @@
       plan_ville: 'Plan de ville',
       plan_cadastral: 'Plan cadastral',
       ortho: 'Images aériennes',
+      topo: 'Plan topographique',
     };
     // A dictionnary containing named layers in the form of { layer_name: ol.layer.Image(), }
     const _sitnWMSLayers = {};
@@ -39,10 +40,10 @@
     let _drawWidth = 4;
     let _pointStyle = 'circle';
     let _searchColor = 'red';
-    let _map = false;
     let _minZoom = 0;
     let _maxZoom = 28;
 
+    sitnLayers.map = undefined;
     sitnLayers.sitnCurrentBaseLayer = new ol.layer.Tile();
     sitnLayers.sitnDrawLayer = new ol.layer.Vector({
       source: _drawSource,
@@ -163,7 +164,7 @@
           });
         });
       }
-      _map = new ol.Map({
+      sitnLayers.map = new ol.Map({
         target: _target,
         layers: [
           sitnLayers.sitnCurrentBaseLayer,
@@ -181,7 +182,7 @@
        * Creates select options, sets first baseLayer as default
        * or sets plan_ville if no _baselayers are defined
        */
-      if (_baselayers) {
+      if (_baselayers && _selectTarget) {
         const selectElement = document.getElementById(_selectTarget);
         Object.values(_baselayers).forEach((baselayer) => {
           selectElement.append(new Option(_sitnBaseLayers[baselayer], baselayer));
@@ -191,6 +192,9 @@
           const newSource = document.querySelector(`#${_selectTarget} option:checked`).value;
           sitnLayers.setSource(newSource);
         };
+      }
+
+      if (_baselayers) {
         this.setSource(_baselayers[0]);
       } else {
         this.setSource('plan_ville');
@@ -201,7 +205,7 @@
        */
       if (_buttons) {
         _mainbar = new ol.control.Bar();
-        _map.addControl(_mainbar);
+        sitnLayers.map.addControl(_mainbar);
         _mainbar.setPosition('top-left');
         const editbar = new ol.control.Bar({
           toggleOne: true, // one control active at the same time
@@ -465,8 +469,8 @@
      * on coordinates: an array of 2 numbers
      */
     sitnLayers.recenterMap = function (coordinates, zoomLevel) {
-      if (_map) {
-        const view = _map.getView();
+      if (sitnLayers.map) {
+        const view = sitnLayers.map.getView();
         const point = new ol.geom.Point(coordinates);
         view.fit(point, { maxZoom: zoomLevel });
       }
@@ -489,7 +493,7 @@
         if (Math.round(extent[0]) === Math.round(extent[2])) {
           sitnLayers.recenterMap(center, 14);
         } else {
-          _map.getView().fit(extent);
+          sitnLayers.map.getView().fit(extent);
         }
       }
       return center;
@@ -574,13 +578,13 @@
     sitnLayers._searchBoxOnSelect = function (e) {
       const result = this.searchBoxResultList[e.target.dataset.resultId];
       const resultGeometry = result.geometry;
-      if (_map) {
+      if (sitnLayers.map) {
         const searchSource = this.searchLayer.getSource();
         searchSource.clear();
         if (resultGeometry.coordinates.length > 0) {
           const geojsonFormat = new ol.format.GeoJSON();
           searchSource.addFeatures(geojsonFormat.readFeatures(resultGeometry));
-          _map.getView().fit(result.bbox, { maxZoom: 12, padding: [50, 50, 50, 50] });
+          sitnLayers.map.getView().fit(result.bbox, { maxZoom: 12, padding: [50, 50, 50, 50] });
         } else {
           console.error('No geometry on search result!', result);
         }
@@ -674,8 +678,8 @@
       sitnLayers._searchBoxCreateTemplates();
       sitnLayers._searchBoxRegisterEvents();
 
-      if (_map) {
-        _map.addLayer(sitnLayers.searchLayer);
+      if (sitnLayers.map) {
+        sitnLayers.map.addLayer(sitnLayers.searchLayer);
       }
     };
     return sitnLayers;
