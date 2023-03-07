@@ -17,12 +17,7 @@ curl https://raw.githubusercontent.com/Viglino/ol-ext/master/dist/ol-ext.min.css
 
 ## Dev environment
 
-If you want live reload, install live-server:
-
-```powershell
-npm install -g live-server
-npm install
-```
+If you want live reload, install live-server on your favourite code editor.
 
 Download mappings for debug:
 
@@ -30,5 +25,3 @@ Download mappings for debug:
 curl https://cdn.jsdelivr.net/npm/ol@v7.2.2/dist/ol.js.map -o assets\ol\ol.js.map
 curl https://cdn.jsdelivr.net/npm/ol@v7.2.2/ol.css.map -o assets\ol\ol.css.map
 ```
-
-then just run `live-server` at the root of your project.
