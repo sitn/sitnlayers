@@ -154,14 +154,14 @@
       // changer l'épaisseur
       document.getElementById('width2').onchange = (e) => {
         map2.setDrawStyle({
-          drawWidth: e.value,
+          drawWidth: e.target.value,
         });
       };
 
       // changer la couleur
       document.getElementById('color2').onchange = (e) => {
         map2.setDrawStyle({
-          drawColor: e.value,
+          drawColor: e.target.value,
         });
       };
 
@@ -191,6 +191,7 @@
         baseLayers: [
           'plan_ville',
           'plan_cadastral',
+          'topo',
           'ortho',
         ],
         selectTarget: 'theme-selector',
