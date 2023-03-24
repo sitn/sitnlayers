@@ -13,9 +13,8 @@
 (function (window) {
   function sitnLayers() {
     const sitnLayers = {};
-    const _extent = [2420000, 1030000, 2900000, 1350000];
+    const _extent = [2420000, 1030000, 2900000, 1360000];
     const _crs = 'EPSG:2056';
-    const _WMTSurl = 'https://sitn.ne.ch/services/wmts?SERVICE=WMTS&REQUEST=GetCapabilities';
     const _WMSurl = 'https://sitn.ne.ch/mapserv_proxy?ogcserver=source+for+image%2Fpng';
     const _drawSource = new ol.source.Vector();
     const _markerColor = '#8959A8';
@@ -60,6 +59,20 @@
       extent: _extent,
     });
 
+    const _resolutions = [
+      250, 100, 50, 20, 10, 5, 2.5, 2, 1.5, 1, 0.5, 0.25, 0.125, 0.0625,
+      0.03125, 0.015625, 0.0078125];
+    const _matrixIds = [];
+    for (let i = 0; i < _resolutions.length; i += 1) {
+      _matrixIds.push(i);
+    }
+
+    const _tileGrid = new ol.tilegrid.WMTS({
+      origin: [_extent[0], _extent[3]],
+      resolutions: _resolutions,
+      matrixIds: _matrixIds
+    });
+
     sitnLayers._createMarkerStyle = function (color) {
       return new ol.style.Icon({
         anchor: [0.5, 1],
@@ -68,26 +81,30 @@
         src: _markerImage,
       });
     };
-    // TODO: get out source from here when base layer selection will be implemented
+
     sitnLayers.setSource = function (layerName) {
-      fetch(_WMTSurl).then((response) => response.text()).then((getCap) => {
-        const _parser = new ol.format.WMTSCapabilities();
-        const _result = _parser.read(getCap);
-        sitnLayers.WMTSOptions = ol.source.WMTS.optionsFromCapabilities(
-          _result, {
-          layer: layerName,
-          matrixSet: _crs,
-        },
-        );
-        const source = new ol.source.WMTS(sitnLayers.WMTSOptions);
-        sitnLayers.sitnCurrentBaseLayer.setSource(source);
-      });
+      const source = new ol.source.WMTS({
+        layer: layerName,
+        attributions: 'Informations dépourvues de foi publique, '
+          + '<a target="new" href="https://sitn.ne.ch/web/conditions_utilisation/contrat_SITN_MO.htm">'
+          + '© SITN</a> | '
+          + '<a target="new" href="https://sitn.ne.ch/web/conditions_utilisation/contratdv5741.htm">'
+          + 'swisstopo DV 571.4</a> | '
+          + '<a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> | '
+          + '<a href="https://mapicons.mapsmarker.com/about/license/" target="_blank">Maps Icons Collection</a>',
+        projection: _projection,
+        url: 'https://sitn.ne.ch/mapproxy95/wmts/1.0.0/{layer}/default/EPSG2056/{TileMatrix}/{TileRow}/{TileCol}.png',
+        tileGrid: _tileGrid,
+        requestEncoding: 'REST'
+      })
+      sitnLayers.sitnCurrentBaseLayer.setSource(source);
     };
 
     sitnLayers.view = new ol.View({
       projection: _projection,
       center: ol.proj.fromLonLat([6.80, 47.05], _projection),
-      zoom: 4,
+      resolutions: _resolutions,
+      constrainResolution: true
     });
 
     /**
@@ -174,7 +191,7 @@
         ],
         view: sitnLayers.view,
       });
-      sitnLayers.view.setZoom(options.minZoom || 4);
+      sitnLayers.view.setZoom(options.minZoom || 1);
       sitnLayers.view.setMinZoom(_minZoom);
       sitnLayers.view.setMaxZoom(_maxZoom);
 
