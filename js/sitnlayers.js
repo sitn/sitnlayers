@@ -20,10 +20,10 @@
     const _markerColor = '#8959A8';
     const _markerSource = new ol.source.Vector();
     const _sitnBaseLayers = {
-      plan_ville: 'Plan de ville',
-      plan_cadastral: 'Plan cadastral',
-      ortho: 'Images aériennes',
-      topo: 'Plan topographique',
+      plan_ville: { nameFr: 'Plan de ville', format: 'png' },
+      plan_cadastral: { nameFr: 'Plan cadastral', format: 'png' },
+      ortho: { nameFr: 'Images aériennes', format: 'jpeg' },
+      topo: { nameFr: 'Plan topographique', format: 'png' },
     };
     // A dictionnary containing named layers in the form of { layer_name: ol.layer.Image(), }
     const _sitnWMSLayers = {};
@@ -83,6 +83,7 @@
     };
 
     sitnLayers.setSource = function (layerName) {
+      const format = _sitnBaseLayers[layerName]['format'];
       const source = new ol.source.WMTS({
         layer: layerName,
         attributions: 'Informations dépourvues de foi publique, '
@@ -93,7 +94,9 @@
           + '<a href="http://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> | '
           + '<a href="https://mapicons.mapsmarker.com/about/license/" target="_blank">Maps Icons Collection</a>',
         projection: _projection,
-        url: 'https://sitn.ne.ch/mapproxy95/wmts/1.0.0/{layer}/default/EPSG2056/{TileMatrix}/{TileRow}/{TileCol}.png',
+        url: `https://sitn.ne.ch/mapproxy95/wmts/1.0.0/{layer}/{style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.${format}`,
+        matrixSet: 'EPSG2056',
+        style: 'default',
         tileGrid: _tileGrid,
         requestEncoding: 'REST'
       })
@@ -202,7 +205,7 @@
       if (_baselayers && _selectTarget) {
         const selectElement = document.getElementById(_selectTarget);
         Object.values(_baselayers).forEach((baselayer) => {
-          selectElement.append(new Option(_sitnBaseLayers[baselayer], baselayer));
+          selectElement.append(new Option(_sitnBaseLayers[baselayer]['nameFr'], baselayer));
         });
 
         selectElement.onchange = () => {
